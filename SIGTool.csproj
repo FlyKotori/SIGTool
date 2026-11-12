@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8BFF6688-A639-41A7-A164-0F829DA6FDF9}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>SIGTool</RootNamespace>
+    <AssemblyName>SIGTool</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configs\ConfigLoader.cs" />
+    <Compile Include="Configs\SIGConfigModels.cs" />
+    <Compile Include="Configs\SIGConfigTable.cs" />
+    <Compile Include="Configs\SimpleJsonSerializer.cs" />
+    <Compile Include="Datas\ArtifactFormationDatas.cs" />
+    <Compile Include="Datas\CharacterDatas.cs" />
+    <Compile Include="Datas\ClientSettingsData.cs" />
+    <Compile Include="Datas\CombatDatas.cs" />
+    <Compile Include="Datas\SectBuildingDatas.cs" />
+    <Compile Include="Datas\SIGEnums.cs" />
+    <Compile Include="Datas\SIGSaveData.cs" />
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CombatDetailForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormCharacterSheet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormRecipePicker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormStorageVault.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormTrayHotkeySettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainSIGForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\TopResourceHeaderBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcAlertPinStrip.cs" />
+    <Compile Include="Forms\UIs\UcArtifactArrayPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcCombatExplorePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcCompactTileGrid.cs" />
+    <Compile Include="Forms\UIs\UcCultivationPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcDiscipleCraftPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcFilterSortBar.cs" />
+    <Compile Include="Forms\UIs\UcKeyValueInspector.cs" />
+    <Compile Include="Forms\UIs\UcLogConsole.cs" />
+    <Compile Include="Forms\UIs\UcSectBuildPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcStatusFeedbackStrip.cs" />
+    <Compile Include="Forms\UIs\UiStyleHelper.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Modules\Core\ClientSettingsService.cs" />
+    <Compile Include="Modules\Core\SaveLoadService.cs" />
+    <Compile Include="Modules\Core\SIGEngine.cs" />
+    <Compile Include="Modules\Core\SIGEventBus.cs" />
+    <Compile Include="Modules\Logics\ArtifactFormationLogic.cs" />
+    <Compile Include="Modules\Logics\CombatLogic.cs" />
+    <Compile Include="Modules\Logics\CraftAndItemLogic.cs" />
+    <Compile Include="Modules\Logics\CultivationLogic.cs" />
+    <Compile Include="Modules\Logics\SectBuildLogic.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Configs\SIGConfig.json" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
