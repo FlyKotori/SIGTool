@@ -28,6 +28,7 @@ namespace SIGTool.Forms
         {
             _engine = engine;
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Text = "独立演武战报窗 - 秘境连战监控";
             this.Size = new Size(800, 540);
             this.MinimumSize = new Size(620, 400);
@@ -54,8 +55,12 @@ namespace SIGTool.Forms
             var pnlTop = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Top, 32);
             pnlTop.Padding = new Padding(6, 2, 6, 2);
 
-            pnlTop.Controls.Add(UiStyleHelper.CreateButton("法宝主动技", (s, e) => TriggerSkill("SKILL_TALISMAN"), UiButtonRole.PrimaryBlue, true));
-            pnlTop.Controls.Add(UiStyleHelper.CreateButton("诛仙剑阵", (s, e) => TriggerSkill("SKILL_QI_BURST"), UiButtonRole.WarningAmber, true));
+            var btnTal = UiStyleHelper.CreateButton("法宝主动技", (s, e) => TriggerSkill("SKILL_TALISMAN"), UiButtonRole.PrimaryBlue, true);
+            var btnBurst = UiStyleHelper.CreateButton("诛仙剑阵", (s, e) => TriggerSkill("SKILL_QI_BURST"), UiButtonRole.WarningAmber, true);
+            UiStyleHelper.SetToolTip(btnTal, "催动本命法宝主动技 — 快捷键: Q");
+            UiStyleHelper.SetToolTip(btnBurst, "燃烧气海施展太虚诛仙剑阵 — 快捷键: E");
+            pnlTop.Controls.Add(btnTal);
+            pnlTop.Controls.Add(btnBurst);
 
             for (int i = 0; i < 3; i++)
             {
@@ -204,6 +209,38 @@ namespace SIGTool.Forms
 
             UiStyleHelper.StyleContextMenu(_pillPopupMenu);
             _pillPopupMenu.Show(anchor, pt);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                this.Close();
+                return true;
+            }
+            if (!UiStyleHelper.IsTextInputFocused(this.ActiveControl))
+            {
+                if (keyData == Keys.D1 || keyData == Keys.NumPad1) { UseSlotFromHotkey(0); return true; }
+                if (keyData == Keys.D2 || keyData == Keys.NumPad2) { UseSlotFromHotkey(1); return true; }
+                if (keyData == Keys.D3 || keyData == Keys.NumPad3) { UseSlotFromHotkey(2); return true; }
+                if (keyData == Keys.Q) { TriggerSkill("SKILL_TALISMAN"); return true; }
+                if (keyData == Keys.E) { TriggerSkill("SKILL_QI_BURST"); return true; }
+                if (keyData == Keys.Space)
+                {
+                    int spd = _engine.TogglePauseOrResume();
+                    ReportCombatFeedback(true, spd == 0 ? "已暂停时间推演 (0x)。" : string.Format("已恢复时间推演 ({0}x)。", spd));
+                    return true;
+                }
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void UseSlotFromHotkey(int idx)
+        {
+            string m;
+            bool ok = CombatLogic.UseQuickCombatPillSlot(_engine.Save, idx, _engine.EventBus, out m);
+            ReportCombatFeedback(ok, m);
+            RefreshView();
         }
 
         public void ApplyTheme()

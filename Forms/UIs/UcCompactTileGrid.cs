@@ -198,7 +198,7 @@ namespace SIGTool.Forms.UIs
     }
 
     /// <summary>
-    /// 多列流式紧凑格子容器 + 底部内置 UcKeyValueInspector 结构化键值差值检查器（UI-UX-00/05/07）
+    /// 多列流式紧凑格子容器 + 底部内置 UcKeyValueInspector + EXT-03 全键盘方向键选格/Enter执行/右键菜单支持
     /// </summary>
     public class UcCompactTileGrid : UserControl, IThemeableView
     {
@@ -338,6 +338,86 @@ namespace SIGTool.Forms.UIs
 
             if (countChanged) _flowTiles.ResumeLayout();
             UpdateFooterContent();
+        }
+
+        /// <summary>
+        /// EXT-03 键盘无障碍操作：支持方向键 ←→↑↓ 移动选中格、Enter 执行双击主操作、Apps/Shift+F10 弹出右键菜单
+        /// </summary>
+        public bool HandleKeyboardNavigation(Keys keyData)
+        {
+            if (_tileControls.Count == 0) return false;
+
+            int curIdx = -1;
+            for (int i = 0; i < _tileControls.Count; i++)
+            {
+                if (_tileControls[i].TileId == _selectedId)
+                {
+                    curIdx = i;
+                    break;
+                }
+            }
+            if (curIdx < 0) curIdx = 0;
+
+            if (keyData == Keys.Enter)
+            {
+                HandleTileDoubleClicked(_tileControls[curIdx].TileId);
+                return true;
+            }
+
+            if (keyData == Keys.Apps || keyData == (Keys.F10 | Keys.Shift))
+            {
+                var anchor = _tileControls[curIdx];
+                HandleTileRightClicked(anchor.TileId, anchor, new Point(6, anchor.Height - 2));
+                return true;
+            }
+
+            int nextIdx = curIdx;
+            if (keyData == Keys.Left)
+            {
+                nextIdx = Math.Max(0, curIdx - 1);
+            }
+            else if (keyData == Keys.Right)
+            {
+                nextIdx = Math.Min(_tileControls.Count - 1, curIdx + 1);
+            }
+            else if (keyData == Keys.Up || keyData == Keys.Down)
+            {
+                int cols = EstimateVisualColumnCount();
+                nextIdx = (keyData == Keys.Up)
+                    ? Math.Max(0, curIdx - cols)
+                    : Math.Min(_tileControls.Count - 1, curIdx + cols);
+            }
+            else
+            {
+                return false;
+            }
+
+            if (nextIdx != curIdx || string.IsNullOrEmpty(_selectedId))
+            {
+                var target = _tileControls[nextIdx];
+                HandleTileClicked(target.TileId);
+                _flowTiles.ScrollControlIntoView(target);
+            }
+            return true;
+        }
+
+        private int EstimateVisualColumnCount()
+        {
+            if (_tileControls.Count <= 1) return 1;
+            int firstTop = _tileControls[0].Top;
+            int cols = 0;
+            for (int i = 0; i < _tileControls.Count; i++)
+            {
+                if (Math.Abs(_tileControls[i].Top - firstTop) <= 6)
+                {
+                    cols++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return Math.Max(1, cols);
         }
 
         private void HandleTileClicked(string id)

@@ -70,6 +70,7 @@
     <Compile Include="Modules\Logics\SectBuildLogic.cs" />
     <Compile Include="Modules\Logics\CraftAndItemLogic.cs" />
     <Compile Include="Modules\Logics\CombatLogic.cs" />
+    <Compile Include="Modules\Logics\DevBalanceLogic.cs" />
     <!-- 4. Forms & Forms/UIs 窗体与子面板表现层 -->
     <Compile Include="Forms\MainSIGForm.cs">
       <SubType>Form</SubType>
@@ -87,6 +88,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\FormRecipePicker.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormDevBalanceConsole.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\UIs\UiStyleHelper.cs">

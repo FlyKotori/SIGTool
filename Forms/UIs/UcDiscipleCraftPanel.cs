@@ -108,13 +108,8 @@ namespace SIGTool.Forms.UIs
             tblLeft.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             var pnlTopActions = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Fill, 28);
-            _btnRecruit = UiStyleHelper.CreateButton("招募弟子", (s, e) =>
-            {
-                string msg;
-                bool ok = SectBuildLogic.RecruitDisciple(_engine.Save, _engine.Rng, _engine.EventBus, out msg);
-                UiFeedbackService.ReportAction(ok, msg);
-                RefreshView();
-            }, UiButtonRole.PrimaryBlue, true);
+            _btnRecruit = UiStyleHelper.CreateButton("招募弟子", (s, e) => TriggerRecruitByHotkey(), UiButtonRole.PrimaryBlue, true);
+            UiStyleHelper.SetToolTip(_btnRecruit, "消耗灵石与灵谷寻访新外门弟子入山 — 本页快捷键: R");
 
             _lblJobSummary = new Label
             {
@@ -199,14 +194,8 @@ namespace SIGTool.Forms.UIs
             tblRight.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
 
             var pnlWsBar = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Fill, 28);
-            var btnOpenCompendium = UiStyleHelper.CreateButton("百艺总谱 / 掌门手动开炉", (s, e) =>
-            {
-                using (var dlg = new FormRecipePicker(_engine, -1, ""))
-                {
-                    dlg.ShowDialog(this);
-                }
-                RefreshView();
-            }, UiButtonRole.PrimaryBlue, true);
+            var btnOpenCompendium = UiStyleHelper.CreateButton("百艺总谱 / 掌门手动开炉", (s, e) => OpenRecipeCompendiumByHotkey(), UiButtonRole.PrimaryBlue, true);
+            UiStyleHelper.SetToolTip(btnOpenCompendium, "打开宗门百艺丹器总谱，支持掌门按批量手动开炉祭炼 — 本页快捷键: M");
 
             pnlWsBar.Controls.Add(btnOpenCompendium);
 
@@ -376,6 +365,24 @@ namespace SIGTool.Forms.UIs
             UiStyleHelper.StyleContextMenu(_rowContextMenu);
             Rectangle cellRect = _gridWorkshops.GetCellDisplayRectangle(Math.Max(0, e.ColumnIndex), e.RowIndex, true);
             _rowContextMenu.Show(_gridWorkshops, new Point(cellRect.Left + e.X, cellRect.Top + e.Y));
+        }
+
+        public void TriggerRecruitByHotkey()
+        {
+            if (_engine.Save == null) return;
+            string msg;
+            bool ok = SectBuildLogic.RecruitDisciple(_engine.Save, _engine.Rng, _engine.EventBus, out msg);
+            UiFeedbackService.ReportAction(ok, msg);
+            RefreshView();
+        }
+
+        public void OpenRecipeCompendiumByHotkey()
+        {
+            using (var dlg = new FormRecipePicker(_engine, -1, ""))
+            {
+                dlg.ShowDialog(this);
+            }
+            RefreshView();
         }
 
         public void ApplyTheme()

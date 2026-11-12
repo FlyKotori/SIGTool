@@ -620,6 +620,49 @@ namespace SIGTool.Forms.UIs
             }
         }
 
+        private static readonly ToolTip _sharedToolTip = new ToolTip
+        {
+            ShowAlways = true,
+            InitialDelay = 260,
+            ReshowDelay = 100,
+            AutoPopDelay = 14000
+        };
+
+        /// <summary>
+        /// EXT-03 统一悬浮提示绑定（按钮文字保持简洁无键位角标，快捷键说明统一收纳于悬浮框与底部状态栏）
+        /// </summary>
+        public static void SetToolTip(Control ctrl, string tipText)
+        {
+            if (ctrl == null) return;
+            _sharedToolTip.SetToolTip(ctrl, tipText ?? "");
+        }
+
+        public static Control UnwrapActiveLeafControl(Control root)
+        {
+            Control cur = root;
+            while (cur is ContainerControl)
+            {
+                var cc = (ContainerControl)cur;
+                if (cc.ActiveControl == null || cc.ActiveControl == cur) break;
+                cur = cc.ActiveControl;
+            }
+            return cur;
+        }
+
+        /// <summary>
+        /// 判断当前焦点是否位于文本输入框/下拉框/表格单元格编辑态，防止单键快捷键干扰打字输入
+        /// </summary>
+        public static bool IsTextInputFocused(Control activeRoot)
+        {
+            Control leaf = UnwrapActiveLeafControl(activeRoot);
+            if (leaf == null) return false;
+            if (leaf is TextBoxBase || leaf is UpDownBase) return true;
+            if (leaf is ComboBox) return true;
+            var dgv = leaf as DataGridView;
+            if (dgv != null && dgv.IsCurrentCellInEditMode) return true;
+            return false;
+        }
+
         public static void EnableDoubleBuffer(Control ctrl)
         {
             if (ctrl == null) return;

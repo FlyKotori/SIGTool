@@ -104,6 +104,7 @@ namespace SIGTool.Forms.UIs
             };
 
             var btnRetreat = UiStyleHelper.CreateButton("撤回山门", (s, e) => DoRetreat(), UiButtonRole.Default, true);
+            UiStyleHelper.SetToolTip(btnRetreat, "撤离当前秘境返回宗门休整 — 本页快捷键: Space（交战时撤退 / 休整时出征选中秘境）");
             var btnRaid = UiStyleHelper.CreateButton("主动迎击兽潮", (s, e) =>
             {
                 CombatLogic.StartSectRaid(_engine.Save, _engine.EventBus);
@@ -165,8 +166,12 @@ namespace SIGTool.Forms.UIs
             splitUnits.Panel2.Controls.Add(_gridEnemies);
 
             _pnlTacticalBar = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Fill, 30);
-            _pnlTacticalBar.Controls.Add(UiStyleHelper.CreateButton("法宝主动技", (s, e) => DoManual("SKILL_TALISMAN"), UiButtonRole.PrimaryBlue, true));
-            _pnlTacticalBar.Controls.Add(UiStyleHelper.CreateButton("诛仙剑阵", (s, e) => DoManual("SKILL_QI_BURST"), UiButtonRole.WarningAmber, true));
+            var btnSkillTal = UiStyleHelper.CreateButton("法宝主动技", (s, e) => DoManual("SKILL_TALISMAN"), UiButtonRole.PrimaryBlue, true);
+            var btnSkillBurst = UiStyleHelper.CreateButton("诛仙剑阵", (s, e) => DoManual("SKILL_QI_BURST"), UiButtonRole.WarningAmber, true);
+            UiStyleHelper.SetToolTip(btnSkillTal, "催动掌门当前佩戴本命法宝的主动神通 — 本页快捷键: Q");
+            UiStyleHelper.SetToolTip(btnSkillBurst, "燃烧掌门当前气海修为施展全体高伤【太虚诛仙剑阵】 — 本页快捷键: E");
+            _pnlTacticalBar.Controls.Add(btnSkillTal);
+            _pnlTacticalBar.Controls.Add(btnSkillBurst);
 
             for (int i = 0; i < 3; i++)
             {
@@ -195,6 +200,7 @@ namespace SIGTool.Forms.UIs
                         ShowQuickCombatPillMenu(slotIdx, pillBtn, e.Location);
                     }
                 };
+                UiStyleHelper.SetToolTip(pillBtn, string.Format("战斗快捷丹药槽 {0}（槽1亦用于低血量自动服丹）：双击服丹，右键改绑 — 快捷键: {0}", i + 1));
                 _btnUseCombatPill[i] = pillBtn;
                 _pnlTacticalBar.Controls.Add(pillBtn);
             }
@@ -320,6 +326,44 @@ namespace SIGTool.Forms.UIs
 
             UiStyleHelper.StyleContextMenu(_pillPopupMenu);
             _pillPopupMenu.Show(anchor, pt);
+        }
+
+        public void TriggerCombatPillByHotkey(int slotIdx)
+        {
+            if (slotIdx < 0 || slotIdx >= 3) return;
+            UseCombatPillSlot(slotIdx);
+        }
+
+        public void TriggerTacticalSkillByHotkey(string code)
+        {
+            DoManual(code);
+        }
+
+        public void ToggleExpeditionOrRetreatByHotkey()
+        {
+            if (_engine.Save == null) return;
+            if (_engine.Save.Combat.IsInBattle)
+            {
+                DoRetreat();
+            }
+            else
+            {
+                var sel = _stageTileGrid != null ? _stageTileGrid.SelectedData : null;
+                string targetStageId = sel != null ? sel.Id : _engine.Save.Combat.StageId;
+                if (string.IsNullOrEmpty(targetStageId) && SIGConfigTable.Current.Stages.Count > 0)
+                {
+                    targetStageId = SIGConfigTable.Current.Stages[0].Id;
+                }
+                if (!string.IsNullOrEmpty(targetStageId))
+                {
+                    StartStageById(targetStageId, _chkAutoRepeat != null && _chkAutoRepeat.Checked);
+                }
+            }
+        }
+
+        public bool HandleKeyboardNavigation(Keys keyData)
+        {
+            return _stageTileGrid != null && _stageTileGrid.HandleKeyboardNavigation(keyData);
         }
 
         public void ApplyTheme()

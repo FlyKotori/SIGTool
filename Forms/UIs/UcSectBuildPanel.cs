@@ -48,6 +48,48 @@ namespace SIGTool.Forms.UIs
             }
         }
 
+        public bool HandleKeyboardNavigation(Keys keyData)
+        {
+            bool slotFocused = false;
+            for (int i = 0; i < _slotButtons.Count; i++)
+            {
+                if (_slotButtons[i].Focused) { slotFocused = true; break; }
+            }
+
+            // 按住 Ctrl+方向键 或 当前焦点在左侧 6×4 灵脉地块时，直接在 24 个灵脉格中键盘移动/回车执行
+            Keys baseKey = keyData & Keys.KeyCode;
+            bool ctrlNav = ((keyData & Keys.Control) == Keys.Control) &&
+                           (baseKey == Keys.Left || baseKey == Keys.Right || baseKey == Keys.Up || baseKey == Keys.Down);
+
+            if (slotFocused || ctrlNav)
+            {
+                if (keyData == Keys.Enter)
+                {
+                    HandleSlotDoubleClicked(_selectedSlotIndex);
+                    return true;
+                }
+                if (keyData == Keys.Apps || keyData == (Keys.F10 | Keys.Shift))
+                {
+                    var btn = _slotButtons[_selectedSlotIndex];
+                    ShowVeinSlotContextMenu(_selectedSlotIndex, btn, new Point(8, btn.Height - 4));
+                    return true;
+                }
+                int next = _selectedSlotIndex;
+                if (baseKey == Keys.Left) next = Math.Max(0, _selectedSlotIndex - 1);
+                else if (baseKey == Keys.Right) next = Math.Min(23, _selectedSlotIndex + 1);
+                else if (baseKey == Keys.Up) next = Math.Max(0, _selectedSlotIndex - 6);
+                else if (baseKey == Keys.Down) next = Math.Min(23, _selectedSlotIndex + 6);
+                else return false;
+
+                _selectedSlotIndex = next;
+                RefreshView();
+                if (slotFocused) _slotButtons[_selectedSlotIndex].Focus();
+                return true;
+            }
+
+            return _buildTileGrid != null && _buildTileGrid.HandleKeyboardNavigation(keyData);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && _slotContextMenu != null)
@@ -114,6 +156,7 @@ namespace SIGTool.Forms.UIs
                         ShowVeinSlotContextMenu(captured, btn, e.Location);
                     }
                 };
+                UiStyleHelper.SetToolTip(btn, string.Format("灵脉地块 #{0}：单击选中查看堪舆，双击开辟/升阶/营造，右键打开地块菜单（聚焦地块时可用方向键与 Enter 操作）", idx + 1));
                 _slotButtons.Add(btn);
                 tblGrid.Controls.Add(btn, idx % 6, idx / 6);
             }

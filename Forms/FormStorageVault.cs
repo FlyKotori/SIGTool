@@ -38,6 +38,7 @@ namespace SIGTool.Forms
             _isPickerMode = isPickerMode;
 
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Text = titleOverride ?? (isPickerMode ? "选择槽位绑定物品" : "乾坤储物阁 - 宗门丹器总库");
             this.Size = new Size(740, 520);
             this.MinimumSize = new Size(580, 400);
@@ -282,6 +283,26 @@ namespace SIGTool.Forms
             }
 
             return menu;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                if (UiStyleHelper.IsTextInputFocused(this.ActiveControl))
+                {
+                    if (_tileGrid != null) _tileGrid.Focus();
+                    return true;
+                }
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+                return true;
+            }
+            if (!UiStyleHelper.IsTextInputFocused(this.ActiveControl) && _tileGrid != null)
+            {
+                if (_tileGrid.HandleKeyboardNavigation(keyData)) return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         public void ApplyTheme()

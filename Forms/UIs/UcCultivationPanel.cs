@@ -114,6 +114,8 @@ namespace SIGTool.Forms.UIs
             {
                 if (_onOpenCharSheet != null) _onOpenCharSheet(_engine.Save.Leader);
             }, UiButtonRole.Default, true);
+            UiStyleHelper.SetToolTip(btnFullSheet, "打开掌门先天根骨与全量属性法卷 — 快捷键: C");
+            UiStyleHelper.SetToolTip(_lblLeaderRealmTitle, "双击掌门名号亦可打开全属性详单 — 快捷键: C");
 
             pnlTitleRow.Controls.AddRange(new Control[] { _lblLeaderRealmTitle, _lblLifespanAlert, btnFullSheet });
 
@@ -150,6 +152,7 @@ namespace SIGTool.Forms.UIs
                 Text = "突破准备中..."
             };
 
+            UiStyleHelper.SetToolTip(_btnBreakthrough, "气海盈满时冲击下一小境界或渡劫破入大境界 — 快捷键: P");
             _batchStepBar = new UcBatchStepBar("批量:");
             pnlBreakRow.Controls.AddRange(new Control[] { _btnBreakthrough, _lblBreakthroughRate, _batchStepBar });
 
@@ -176,6 +179,9 @@ namespace SIGTool.Forms.UIs
                 () => PickEquipSlot(ItemCategory.Talisman, VaultFilterMode.TalismanOnly, "选择主动本命法宝"),
                 (ctrl, pt) => ShowQuickEquipContextMenu(ItemCategory.Talisman, ctrl, pt));
 
+            UiStyleHelper.SetToolTip(_btnWeaponSlot, "飞剑槽：双击打开储物阁挑选，右键直接快换库存飞剑或卸下");
+            UiStyleHelper.SetToolTip(_btnArmorSlot, "宝衣槽：双击打开储物阁挑选，右键直接快换库存宝衣或卸下");
+            UiStyleHelper.SetToolTip(_btnTalismanSlot, "本命法宝槽：双击打开储物阁挑选，右键直接快换库存法宝或卸下");
             tblEquip.Controls.Add(_btnWeaponSlot, 0, 0);
             tblEquip.Controls.Add(_btnArmorSlot, 0, 1);
             tblEquip.Controls.Add(_btnTalismanSlot, 0, 2);
@@ -206,6 +212,7 @@ namespace SIGTool.Forms.UIs
                     (ctrl, pt) => ShowQuickPillBindMenu(slotIdx, ctrl, pt));
                 slotBtn.TextAlign = ContentAlignment.MiddleCenter;
                 slotBtn.Margin = new Padding(3, 2, 3, 2);
+                UiStyleHelper.SetToolTip(slotBtn, string.Format("修行快捷丹药槽 {0}：双击按上方所选批量服丹，右键改绑丹药 — 快捷键: {0}", i + 1));
                 _btnQuickPillSlots[i] = slotBtn;
                 tblPills.Controls.Add(slotBtn, i, 0);
             }
@@ -471,6 +478,26 @@ namespace SIGTool.Forms.UIs
 
             UiStyleHelper.StyleContextMenu(_slotPopupMenu);
             _slotPopupMenu.Show(anchor, pt);
+        }
+
+        public void TriggerQuickPillByHotkey(int slotIdx)
+        {
+            if (slotIdx < 0 || slotIdx >= 3) return;
+            UseQuickCultivationSlotBatch(slotIdx, _batchStepBar != null ? _batchStepBar.SelectedBatch : 1);
+        }
+
+        public void TriggerBreakthroughByHotkey()
+        {
+            if (_engine.Save == null) return;
+            string msg;
+            bool ok = CultivationLogic.TryBreakthrough(_engine.Save, _engine.Save.Leader, _engine.Rng, _engine.EventBus, out msg);
+            UiFeedbackService.ReportAction(ok, msg);
+            RefreshView();
+        }
+
+        public bool HandleKeyboardNavigation(Keys keyData)
+        {
+            return _techTileGrid != null && _techTileGrid.HandleKeyboardNavigation(keyData);
         }
 
         public void ApplyTheme()

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using SIGTool.Datas;
 using SIGTool.Forms.UIs;
 using SIGTool.Modules.Core;
+using SIGTool.Modules.Logics;
 
 namespace SIGTool.Forms
 {
@@ -35,6 +36,7 @@ namespace SIGTool.Forms
         private FormStorageVault _vaultWindow;
         private FormCharacterSheet _charSheetWindow;
         private CombatDetailForm _combatPopupForm;
+        private FormDevBalanceConsole _devConsoleWindow;
 
         private NotifyIcon _notifyIcon;
         private Icon _staticTrayIcon;
@@ -52,6 +54,7 @@ namespace SIGTool.Forms
         private bool _restoreVaultOnWake = false;
         private bool _restoreCharSheetOnWake = false;
         private bool _restoreCombatOnWake = false;
+        private bool _restoreDevConsoleOnWake = false;
 
         public MainSIGForm()
         {
@@ -59,6 +62,7 @@ namespace SIGTool.Forms
             UiStyleHelper.SetTheme(clientSettings.GetThemeModeEnum(), false);
 
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Size = new Size(clientSettings.WindowWidth, clientSettings.WindowHeight);
             this.MinimumSize = new Size(1020, 680);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -95,7 +99,8 @@ namespace SIGTool.Forms
                 OpenOrFocusCombatWindow,
                 CycleNextTheme,
                 HideToSystemTray,
-                OpenBossHotkeySettingsDialog);
+                OpenBossHotkeySettingsDialog,
+                OpenOrFocusDevConsole);
 
             _alertPinStrip = new UcAlertPinStrip(HandleAlertJump);
             _statusStrip = new UcStatusFeedbackStrip(true);
@@ -131,7 +136,12 @@ namespace SIGTool.Forms
             tab5.Controls.Add(_ucArtifactArray);
 
             _tabMain.TabPages.AddRange(new TabPage[] { tab1, tab2, tab3, tab4, tab5 });
-            _tabMain.SelectedIndexChanged += (s, e) => RefreshActiveViews();
+            UiStyleHelper.SetToolTip(_tabMain, "快捷键切换页签：F1 修仙吐纳 / F2 宗门营造 / F3 门人百艺 / F4 秘境斗法 / F5 法宝大阵");
+            _tabMain.SelectedIndexChanged += (s, e) =>
+            {
+                UpdateStatusShortcutHint();
+                RefreshActiveViews();
+            };
 
             _ucLogConsole = new UcLogConsole(_engine.EventBus);
 
@@ -142,6 +152,8 @@ namespace SIGTool.Forms
             this.Controls.Add(_statusStrip);
             this.Controls.Add(_alertPinStrip);
             this.Controls.Add(_headerBar);
+
+            UpdateStatusShortcutHint();
         }
 
         private void HandleAlertJump(AlertJumpRequest req)
@@ -230,7 +242,13 @@ namespace SIGTool.Forms
                 OpenBossHotkeySettingsDialog();
             });
 
-            var miQuickSave = new ToolStripMenuItem("立即保存存档", null, (s, e) =>
+            var miDevConsole = new ToolStripMenuItem("开发者数值平衡测试台 (F12)", null, (s, e) =>
+            {
+                WakeFromSystemTray();
+                OpenOrFocusDevConsole();
+            });
+
+            var miQuickSave = new ToolStripMenuItem("立即保存存档 (Ctrl+S)", null, (s, e) =>
             {
                 string msg;
                 bool ok = _engine.SaveSIG(out msg);
@@ -248,6 +266,7 @@ namespace SIGTool.Forms
                 _miThemeOfficeLight,
                 new ToolStripSeparator(),
                 miHotkeyCfg,
+                miDevConsole,
                 miQuickSave,
                 new ToolStripSeparator(),
                 miExit
@@ -343,10 +362,12 @@ namespace SIGTool.Forms
             _restoreVaultOnWake = (_vaultWindow != null && !_vaultWindow.IsDisposed && _vaultWindow.Visible);
             _restoreCharSheetOnWake = (_charSheetWindow != null && !_charSheetWindow.IsDisposed && _charSheetWindow.Visible);
             _restoreCombatOnWake = (_combatPopupForm != null && !_combatPopupForm.IsDisposed && _combatPopupForm.Visible);
+            _restoreDevConsoleOnWake = (_devConsoleWindow != null && !_devConsoleWindow.IsDisposed && _devConsoleWindow.Visible);
 
             if (_restoreVaultOnWake) _vaultWindow.Hide();
             if (_restoreCharSheetOnWake) _charSheetWindow.Hide();
             if (_restoreCombatOnWake) _combatPopupForm.Hide();
+            if (_restoreDevConsoleOnWake) _devConsoleWindow.Hide();
 
             _isStealthHidden = true;
             this.ShowInTaskbar = false;
@@ -377,6 +398,10 @@ namespace SIGTool.Forms
             if (_restoreCombatOnWake && _combatPopupForm != null && !_combatPopupForm.IsDisposed)
             {
                 _combatPopupForm.Show(this);
+            }
+            if (_restoreDevConsoleOnWake && _devConsoleWindow != null && !_devConsoleWindow.IsDisposed)
+            {
+                _devConsoleWindow.Show(this);
             }
 
             BossHotkeyHelper.ForceBringToFront(this);
@@ -442,6 +467,10 @@ namespace SIGTool.Forms
             {
                 UiStyleHelper.ApplyThemeRecursive(_combatPopupForm);
             }
+            if (_devConsoleWindow != null && !_devConsoleWindow.IsDisposed)
+            {
+                UiStyleHelper.ApplyThemeRecursive(_devConsoleWindow);
+            }
 
             UpdateWindowTitleAndHeaderUtilityLabels();
             RefreshActiveViews();
@@ -459,7 +488,7 @@ namespace SIGTool.Forms
 
             string targetTitle = s.UseMinimalWindowTitle
                 ? "SIGTool"
-                : "SIGTool v0.6 - 挂机修仙 · 宗门营造 · 秘境斗法 · 九宫阵宝 (.NET Framework 4.7.2)";
+                : "SIGTool v0.7 - 挂机修仙 · 宗门营造 · 秘境斗法 · 九宫阵宝 (.NET Framework 4.7.2)";
             if (this.Text != targetTitle) this.Text = targetTitle;
 
             if (_headerBar != null)
@@ -494,6 +523,10 @@ namespace SIGTool.Forms
                 if (_charSheetWindow != null && !_charSheetWindow.IsDisposed && _charSheetWindow.Visible)
                 {
                     _charSheetWindow.RefreshSheet();
+                }
+                if (_devConsoleWindow != null && !_devConsoleWindow.IsDisposed && _devConsoleWindow.Visible)
+                {
+                    _devConsoleWindow.RefreshBaselineInfo();
                 }
             };
 
@@ -596,6 +629,254 @@ namespace SIGTool.Forms
                 _combatPopupForm.BringToFront();
                 _combatPopupForm.Focus();
             }
+        }
+
+        private void OpenOrFocusDevConsole()
+        {
+            if (_devConsoleWindow == null || _devConsoleWindow.IsDisposed)
+            {
+                _devConsoleWindow = new FormDevBalanceConsole(_engine);
+                _devConsoleWindow.Show(this);
+            }
+            else
+            {
+                if (!_devConsoleWindow.Visible) _devConsoleWindow.Show(this);
+                _devConsoleWindow.RefreshBaselineInfo();
+                _devConsoleWindow.BringToFront();
+                _devConsoleWindow.Focus();
+            }
+        }
+
+        private void UpdateStatusShortcutHint()
+        {
+            if (_statusStrip == null || _tabMain == null) return;
+            string tabHint;
+            switch (_tabMain.SelectedIndex)
+            {
+                case 0:
+                    tabHint = "F1-F5:切页 | 1-3:服丹 P:破境 | ←↑↓→/Enter:选功法 | Space:暂停 B:储物 C:属性 F12:测试台";
+                    break;
+                case 1:
+                    tabHint = "F1-F5:切页 | ←↑↓→/Enter:选建筑(Ctrl+方向键:选灵脉) | Space:暂停 B:储物 F12:测试台";
+                    break;
+                case 2:
+                    tabHint = "F1-F5:切页 | R:招募 M:百艺总谱 | Space:暂停 1-3:服丹 B:储物 C:属性 F12:测试台";
+                    break;
+                case 3:
+                    tabHint = "F1-F5:切页 | Space:出征/撤退 1-3:战丹 Q/E:神通 | ←↑↓→/Enter:选秘境 | V:战报 F12:测试台";
+                    break;
+                case 4:
+                    tabHint = "F1-F5:切页 | ←↑↓→/Enter:选法宝(Ctrl+方向键:选阵眼) | Space:暂停 B:储物 F12:测试台";
+                    break;
+                default:
+                    tabHint = "F1-F5:切页 | 1-3:服丹 | Space:暂停 | B:储物 C:属性 F12:测试台";
+                    break;
+            }
+            _statusStrip.SetRightHint(tabHint);
+        }
+
+        /// <summary>
+        /// EXT-03 全键盘快捷键操作流（统一拦截并抑制系统默认提示音，自动避让文本输入框焦点）
+        /// </summary>
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // 1. 无论焦点何在均可响应的功能键与 Ctrl 组合热键
+            if (keyData == Keys.F12)
+            {
+                OpenOrFocusDevConsole();
+                return true;
+            }
+            if (keyData >= Keys.F1 && keyData <= Keys.F5)
+            {
+                int targetTab = (int)(keyData - Keys.F1);
+                if (targetTab >= 0 && targetTab < _tabMain.TabPages.Count)
+                {
+                    _tabMain.SelectedIndex = targetTab;
+                }
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.S))
+            {
+                string m;
+                bool ok = _engine.SaveSIG(out m);
+                UiFeedbackService.ReportAction(ok, m);
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.L))
+            {
+                string m;
+                bool ok = _engine.LoadSIGSlot(_engine.CurrentSaveSlot, out m);
+                UiFeedbackService.ReportAction(ok, m);
+                return true;
+            }
+            if (keyData == (Keys.Control | Keys.R))
+            {
+                string m;
+                bool ok = _engine.ReloadConfig(out m);
+                UiFeedbackService.ReportAction(ok, m);
+                return true;
+            }
+
+            // 2. Esc：若输入框聚焦则移出焦点；否则依次关闭顶层非模态子窗口
+            if (keyData == Keys.Escape)
+            {
+                if (UiStyleHelper.IsTextInputFocused(this.ActiveControl))
+                {
+                    _tabMain.Focus();
+                    return true;
+                }
+                if (_devConsoleWindow != null && !_devConsoleWindow.IsDisposed && _devConsoleWindow.Visible)
+                {
+                    _devConsoleWindow.Close();
+                    return true;
+                }
+                if (_combatPopupForm != null && !_combatPopupForm.IsDisposed && _combatPopupForm.Visible)
+                {
+                    _combatPopupForm.Close();
+                    return true;
+                }
+                if (_charSheetWindow != null && !_charSheetWindow.IsDisposed && _charSheetWindow.Visible)
+                {
+                    _charSheetWindow.Close();
+                    return true;
+                }
+                if (_vaultWindow != null && !_vaultWindow.IsDisposed && _vaultWindow.Visible)
+                {
+                    _vaultWindow.Close();
+                    return true;
+                }
+                return false;
+            }
+
+            // 3. 若当前正在搜索框/下拉框等输入组件中打字，则放行全部单字母与数字键
+            if (UiStyleHelper.IsTextInputFocused(this.ActiveControl))
+            {
+                return base.ProcessCmdKey(ref msg, keyData);
+            }
+
+            // 4. 数字键 1 / 2 / 3：秘境斗法页或交战中优先服用战丹槽 1~3，其余页服用掌门修行丹药槽 1~3
+            if (keyData == Keys.D1 || keyData == Keys.NumPad1 ||
+                keyData == Keys.D2 || keyData == Keys.NumPad2 ||
+                keyData == Keys.D3 || keyData == Keys.NumPad3)
+            {
+                int slotIdx = (keyData == Keys.D1 || keyData == Keys.NumPad1) ? 0
+                            : ((keyData == Keys.D2 || keyData == Keys.NumPad2) ? 1 : 2);
+                if (_tabMain.SelectedIndex == 3 || (_engine.Save != null && _engine.Save.Combat.IsInBattle))
+                {
+                    _ucCombatExplore.TriggerCombatPillByHotkey(slotIdx);
+                }
+                else
+                {
+                    _ucCultivation.TriggerQuickPillByHotkey(slotIdx);
+                }
+                RefreshActiveViews();
+                return true;
+            }
+
+            // 5. Space：斗法页切换【出征选中秘境 / 撤回山门】，其余页切换【全局暂停 0x / 恢复原流速】
+            if (keyData == Keys.Space)
+            {
+                if (_tabMain.SelectedIndex == 3)
+                {
+                    _ucCombatExplore.ToggleExpeditionOrRetreatByHotkey();
+                }
+                else
+                {
+                    int spd = _engine.TogglePauseOrResume();
+                    UiFeedbackService.PushInfo(spd == 0
+                        ? "已暂停宗门时间推演 (0x)。"
+                        : string.Format("已恢复宗门时间推演 ({0}x)。", spd));
+                }
+                RefreshActiveViews();
+                return true;
+            }
+
+            // 6. [ 与 ] 键：快捷降速 / 升速档位（0x ↔ 1x ↔ 2x ↔ 5x）
+            if (keyData == Keys.OemOpenBrackets)
+            {
+                int spd = _engine.StepSpeedGear(-1);
+                UiFeedbackService.PushInfo(string.Format("时间流速已调至 {0}x。", spd));
+                RefreshActiveViews();
+                return true;
+            }
+            if (keyData == Keys.OemCloseBrackets)
+            {
+                int spd = _engine.StepSpeedGear(1);
+                UiFeedbackService.PushInfo(string.Format("时间流速已调至 {0}x。", spd));
+                RefreshActiveViews();
+                return true;
+            }
+
+            // 7. 通用单键窗口与工具热键（B=储物阁, C=掌门全属性, V=独立战报窗, T=切换皮肤）
+            if (keyData == Keys.B)
+            {
+                OpenOrFocusVaultWindow();
+                return true;
+            }
+            if (keyData == Keys.C)
+            {
+                OpenOrFocusCharSheetWindow(_engine.Save != null ? _engine.Save.Leader : null);
+                return true;
+            }
+            if (keyData == Keys.V)
+            {
+                OpenOrFocusCombatWindow();
+                return true;
+            }
+            if (keyData == Keys.T)
+            {
+                CycleNextTheme();
+                return true;
+            }
+
+            // 8. 页签上下文专属单键（P=冲击破境, R=招募弟子, M=百艺总谱, Q/E=斗法神通）
+            if (_tabMain.SelectedIndex == 0 && keyData == Keys.P)
+            {
+                _ucCultivation.TriggerBreakthroughByHotkey();
+                return true;
+            }
+            if (_tabMain.SelectedIndex == 2 && keyData == Keys.R)
+            {
+                _ucDiscipleCraft.TriggerRecruitByHotkey();
+                return true;
+            }
+            if (_tabMain.SelectedIndex == 2 && keyData == Keys.M)
+            {
+                _ucDiscipleCraft.OpenRecipeCompendiumByHotkey();
+                return true;
+            }
+            if (_tabMain.SelectedIndex == 3 && keyData == Keys.Q)
+            {
+                _ucCombatExplore.TriggerTacticalSkillByHotkey("SKILL_TALISMAN");
+                return true;
+            }
+            if (_tabMain.SelectedIndex == 3 && keyData == Keys.E)
+            {
+                _ucCombatExplore.TriggerTacticalSkillByHotkey("SKILL_QI_BURST");
+                return true;
+            }
+
+            // 9. 紧凑格子键盘方向导航与回车/菜单键执行（当前焦点不在 DataGridView 表格上时生效）
+            Control leaf = UiStyleHelper.UnwrapActiveLeafControl(this.ActiveControl);
+            if (!(leaf is DataGridView))
+            {
+                Keys baseKey = keyData & Keys.KeyCode;
+                if (baseKey == Keys.Left || baseKey == Keys.Right || baseKey == Keys.Up || baseKey == Keys.Down ||
+                    keyData == Keys.Enter || keyData == Keys.Apps || keyData == (Keys.F10 | Keys.Shift))
+                {
+                    bool handled = false;
+                    switch (_tabMain.SelectedIndex)
+                    {
+                        case 0: handled = _ucCultivation.HandleKeyboardNavigation(keyData); break;
+                        case 1: handled = _ucSectBuild.HandleKeyboardNavigation(keyData); break;
+                        case 3: handled = _ucCombatExplore.HandleKeyboardNavigation(keyData); break;
+                        case 4: handled = _ucArtifactArray.HandleKeyboardNavigation(keyData); break;
+                    }
+                    if (handled) return true;
+                }
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void RequestExplicitExit()

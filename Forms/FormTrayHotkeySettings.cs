@@ -30,6 +30,7 @@ namespace SIGTool.Forms
             _capturedVk = cur.BossHotkeyVirtualKey;
 
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Text = "老板键与系统托盘设置 (EXT-01)";
             this.Size = new Size(490, 310);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -190,6 +191,17 @@ namespace SIGTool.Forms
             _capturedModifiers = mods;
             _capturedVk = (int)key;
             _txtHotkeyCapture.Text = BossHotkeyHelper.FormatHotkeyText(_capturedModifiers, _capturedVk);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape && (_txtHotkeyCapture == null || !_txtHotkeyCapture.Focused))
+            {
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         public void ApplyTheme()

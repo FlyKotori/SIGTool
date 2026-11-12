@@ -25,6 +25,7 @@ namespace SIGTool.Forms
             _character = character ?? engine.Save.Leader;
 
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Text = string.Format("道躯全属性法卷 - 【{0}】", _character.Name);
             this.Size = new Size(580, 520);
             this.MinimumSize = new Size(480, 380);
@@ -62,6 +63,21 @@ namespace SIGTool.Forms
 
             this.Controls.Add(wrap);
             this.Controls.Add(pnlBottom);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                this.Close();
+                return true;
+            }
+            if (keyData == Keys.F5)
+            {
+                RefreshSheet();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         public void ApplyTheme()

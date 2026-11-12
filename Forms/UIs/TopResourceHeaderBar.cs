@@ -159,6 +159,7 @@ namespace SIGTool.Forms.UIs
         private readonly Action _onCycleTheme;
         private readonly Action _onStealthHide;
         private readonly Action _onOpenBossSettings;
+        private readonly Action _onOpenDevConsole;
 
         private Label _lblSectAndDate;
         private Panel _bottomDivider;
@@ -181,7 +182,8 @@ namespace SIGTool.Forms.UIs
             Action onOpenCombatWindow,
             Action onCycleTheme,
             Action onStealthHide,
-            Action onOpenBossSettings)
+            Action onOpenBossSettings,
+            Action onOpenDevConsole = null)
         {
             _engine = engine;
             _onOpenVaultWindow = onOpenVaultWindow;
@@ -189,6 +191,7 @@ namespace SIGTool.Forms.UIs
             _onCycleTheme = onCycleTheme;
             _onStealthHide = onStealthHide;
             _onOpenBossSettings = onOpenBossSettings;
+            _onOpenDevConsole = onOpenDevConsole;
 
             this.DoubleBuffered = true;
             this.Dock = DockStyle.Top;
@@ -316,6 +319,18 @@ namespace SIGTool.Forms.UIs
                 }
             }, UiButtonRole.Default, true);
 
+            UiStyleHelper.SetToolTip(_btnPause, "暂停宗门时间推演 (0x) — 快捷键: Space（非斗法页）或 [ 减速");
+            UiStyleHelper.SetToolTip(_btn1x, "常速推演 (1x) — 快捷键: [ / ] 切换流速档位");
+            UiStyleHelper.SetToolTip(_btn2x, "倍速推演 (2x) — 快捷键: [ / ] 切换流速档位");
+            UiStyleHelper.SetToolTip(_btn5x, "疾速推演 (5x) — 快捷键: [ / ] 切换流速档位");
+            UiStyleHelper.SetToolTip(btnOpenVault, "打开乾坤储物阁 — 快捷键: B");
+            UiStyleHelper.SetToolTip(btnOpenCombat, "打开独立演武战报窗 — 快捷键: V");
+            UiStyleHelper.SetToolTip(_cmbSlot, "选择存档槽位（槽位 1 ~ 槽位 3）");
+            UiStyleHelper.SetToolTip(btnSave, "立即保存至当前存档槽位 — 快捷键: Ctrl+S");
+            UiStyleHelper.SetToolTip(btnLoad, "读取当前所选存档槽位 — 快捷键: Ctrl+L");
+            UiStyleHelper.SetToolTip(btnReloadCfg, "免重启热加载 Configs/SIGConfig.json 配表 — 快捷键: Ctrl+R");
+            UiStyleHelper.SetToolTip(btnReset, "重置当前槽位进度并重新创立宗门（保留皮肤与分栏设置）");
+
             topBtnStrip.Controls.AddRange(new Control[]
             {
                 _btnPause, _btn1x, _btn2x, _btn5x,
@@ -349,7 +364,7 @@ namespace SIGTool.Forms.UIs
                 if (_onCycleTheme != null) _onCycleTheme();
             }, UiButtonRole.PrimaryBlue, true);
 
-            _btnStealthHide = UiStyleHelper.CreateButton("隐藏(Alt+Q)", (s, e) =>
+            _btnStealthHide = UiStyleHelper.CreateButton("隐藏", (s, e) =>
             {
                 if (_onStealthHide != null) _onStealthHide();
             }, UiButtonRole.Default, true);
@@ -359,7 +374,16 @@ namespace SIGTool.Forms.UIs
                 if (_onOpenBossSettings != null) _onOpenBossSettings();
             }, UiButtonRole.Default, true);
 
-            pnlDesktopTools.Controls.AddRange(new Control[] { _btnCycleTheme, _btnStealthHide, _btnBossSettings });
+            var btnDevConsole = UiStyleHelper.CreateButton("测试台", (s, e) =>
+            {
+                if (_onOpenDevConsole != null) _onOpenDevConsole();
+            }, UiButtonRole.Default, true);
+
+            UiStyleHelper.SetToolTip(_btnCycleTheme, "循环切换界面皮肤（深灰灰度 / 白底灰度 / 标准暗蓝） — 快捷键: T");
+            UiStyleHelper.SetToolTip(_btnBossSettings, "设置系统托盘驻留与全局双向隐藏/唤起老板键");
+            UiStyleHelper.SetToolTip(btnDevConsole, "打开开发者数值平衡测试台（时间快进 / 资源注入 / 千场模拟） — 快捷键: F12");
+
+            pnlDesktopTools.Controls.AddRange(new Control[] { _btnCycleTheme, _btnStealthHide, _btnBossSettings, btnDevConsole });
 
             var tblResGrid = new TableLayoutPanel
             {
@@ -417,20 +441,17 @@ namespace SIGTool.Forms.UIs
             string themeTitle = "皮肤:" + UiStyleHelper.GetThemeShortCn(UiStyleHelper.Current.Mode);
             if (_btnCycleTheme.Text != themeTitle) _btnCycleTheme.Text = themeTitle;
 
-            string hideTitle;
-            if (!ClientSettingsService.Current.EnableBossHotkey)
-            {
-                hideTitle = "隐藏至托盘";
-            }
-            else if (!hotkeyRegisteredOk)
-            {
-                hideTitle = string.Format("隐藏({0}占用)", hotkeyLabel);
-            }
-            else
-            {
-                hideTitle = string.Format("隐藏({0})", hotkeyLabel);
-            }
+            string hideTitle = (!ClientSettingsService.Current.EnableBossHotkey || hotkeyRegisteredOk)
+                ? "隐藏"
+                : "隐藏(热键冲突)";
             if (_btnStealthHide.Text != hideTitle) _btnStealthHide.Text = hideTitle;
+
+            string hideTip = !ClientSettingsService.Current.EnableBossHotkey
+                ? "立即隐藏窗口至系统托盘静默挂机（全局老板键当前已关闭）"
+                : (!hotkeyRegisteredOk
+                    ? string.Format("立即隐藏至系统托盘（注意：全局热键 {0} 已被其他程序占用）", hotkeyLabel)
+                    : string.Format("立即隐藏窗口至系统托盘，后台再按 {0} 一键唤起 — 全局热键: {0}", hotkeyLabel));
+            UiStyleHelper.SetToolTip(_btnStealthHide, hideTip);
         }
 
         public void ApplyTheme()

@@ -32,6 +32,7 @@ namespace SIGTool.Forms
             _filterBuildingId = filterBuildingId ?? "";
 
             this.DoubleBuffered = true;
+            this.KeyPreview = true;
             this.Text = targetWorkshopSlotIdx >= 0
                 ? string.Format("选择工坊挂机配方 (地块 #{0})", targetWorkshopSlotIdx + 1)
                 : "宗门百艺丹器总谱 - 掌门手动开炉";
@@ -67,7 +68,7 @@ namespace SIGTool.Forms
 
             _localStatusStrip = new UcStatusFeedbackStrip(
                 subscribeGlobalBus: false,
-                defaultHintText: _targetWorkshopSlotIdx >= 0 ? "双击:装填工坊配方 | 右键:菜单" : "双击:按批量手动开炉 | 右键:菜单");
+                defaultHintText: _targetWorkshopSlotIdx >= 0 ? "双击/Enter:装填配方 | ←↑↓→:选格 | Esc:关闭" : "双击/Enter:批量开炉 | ←↑↓→:选格 | Esc:关闭");
 
             var pnlBottom = new FlowLayoutPanel
             {
@@ -171,6 +172,21 @@ namespace SIGTool.Forms
                 UiFeedbackService.ReportAction(done > 0, lastMsg);
             }
             RefreshRecipeTiles();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Escape)
+            {
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+                return true;
+            }
+            if (!UiStyleHelper.IsTextInputFocused(this.ActiveControl) && _tileGrid != null)
+            {
+                if (_tileGrid.HandleKeyboardNavigation(keyData)) return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         public void ApplyTheme()

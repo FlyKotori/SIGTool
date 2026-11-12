@@ -50,6 +50,47 @@ namespace SIGTool.Forms.UIs
             }
         }
 
+        public bool HandleKeyboardNavigation(Keys keyData)
+        {
+            bool eyeFocused = false;
+            for (int i = 0; i < _eyeButtons.Count; i++)
+            {
+                if (_eyeButtons[i].Focused) { eyeFocused = true; break; }
+            }
+
+            Keys baseKey = keyData & Keys.KeyCode;
+            bool ctrlNav = ((keyData & Keys.Control) == Keys.Control) &&
+                           (baseKey == Keys.Left || baseKey == Keys.Right || baseKey == Keys.Up || baseKey == Keys.Down);
+
+            if (eyeFocused || ctrlNav)
+            {
+                if (keyData == Keys.Enter)
+                {
+                    HandleEyeDoubleClicked(_selectedEyeIndex);
+                    return true;
+                }
+                if (keyData == Keys.Apps || keyData == (Keys.F10 | Keys.Shift))
+                {
+                    var btn = _eyeButtons[_selectedEyeIndex];
+                    ShowEyeContextMenu(_selectedEyeIndex, btn, new Point(8, btn.Height - 4));
+                    return true;
+                }
+                int next = _selectedEyeIndex;
+                if (baseKey == Keys.Left) next = Math.Max(0, _selectedEyeIndex - 1);
+                else if (baseKey == Keys.Right) next = Math.Min(8, _selectedEyeIndex + 1);
+                else if (baseKey == Keys.Up) next = Math.Max(0, _selectedEyeIndex - 3);
+                else if (baseKey == Keys.Down) next = Math.Min(8, _selectedEyeIndex + 3);
+                else return false;
+
+                _selectedEyeIndex = next;
+                RefreshView();
+                if (eyeFocused) _eyeButtons[_selectedEyeIndex].Focus();
+                return true;
+            }
+
+            return _artifactTileGrid != null && _artifactTileGrid.HandleKeyboardNavigation(keyData);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && _eyeContextMenu != null)
@@ -137,6 +178,7 @@ namespace SIGTool.Forms.UIs
                         ShowEyeContextMenu(captured, btn, e.Location);
                     }
                 };
+                UiStyleHelper.SetToolTip(btn, "九宫护山阵眼：单击选中查看共鸣差值，双击开辟/镇入/取回，右键打开阵眼菜单（Ctrl+方向键可切换选中阵眼）");
                 _eyeButtons.Add(btn);
                 tblNineGrid.Controls.Add(btn, idx % 3, idx / 3);
             }
@@ -187,6 +229,10 @@ namespace SIGTool.Forms.UIs
                 Text = "0/60"
             };
 
+            UiStyleHelper.SetToolTip(btnForge1, "按右侧所选连铸批量执行凡铸注灵（主要产出凡品与灵品词条阵宝）");
+            UiStyleHelper.SetToolTip(btnForge2, "按右侧所选连铸批量执行灵铸注灵（大幅提升灵品与宝品词条阵宝概率）");
+            UiStyleHelper.SetToolTip(btnForge3, "按右侧所选连铸批量执行天工仙铸（高概率产出宝品与 4 词条仙品阵宝）");
+            UiStyleHelper.SetToolTip(btnBatchSalvage, "一键拆解宝库中全部未上阵且未加锁的凡品阵宝，返还灵石与玄铁");
             pnlForgeRow.Controls.AddRange(new Control[] { btnForge1, btnForge2, btnForge3, _batchStepBar, btnBatchSalvage, _lblVaultCount });
 
             var rarGroups = new List<KeyValuePair<string, string>>
