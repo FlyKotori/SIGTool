@@ -25,9 +25,12 @@ namespace SIGTool.Modules.Logics
             double stageFactor = Math.Pow(rCfg.SubStageQiGrowth, sub - 1);
             double statStageMult = 1.0 + (sub - 1) * 0.24;
 
+            // SYS-02 汇总经脉穴位与周天共鸣加成（含独立功法倍率乘区 TechMultiplierAdd）
+            var md = MeridianLogic.ComputeMeridianSummary(ch);
+
             double rootCapMult = 0.85 + ch.Innate.RootQuality * 0.12;
-            ch.MaxQi = Math.Round(rCfg.BaseMaxQi * stageFactor * rootCapMult, 0);
-            ch.MaxLifespanYears = rCfg.BaseLifespanYears + ch.Innate.Constitution * 3.0;
+            ch.MaxQi = Math.Round(rCfg.BaseMaxQi * stageFactor * rootCapMult * (1.0 + md.PctMaxQi), 0);
+            ch.MaxLifespanYears = rCfg.BaseLifespanYears + ch.Innate.Constitution * 3.0 + md.LifespanYearsAdd;
 
             double elemMatchBonus = 1.0;
             if (tech != null && tech.GetElement() != ElementType.None)
@@ -36,9 +39,10 @@ namespace SIGTool.Modules.Logics
                 else if (EnumTextMap.IsGenerating(ch.Innate.RootElement, tech.GetElement())) elemMatchBonus = 1.10;
             }
 
-            double techHpMult = tech != null ? tech.HpMultiplier * elemMatchBonus * techLvBonus : 1.0;
-            double techAtkMult = tech != null ? tech.AtkMultiplier * elemMatchBonus * techLvBonus : 1.0;
-            double techDefMult = tech != null ? tech.DefMultiplier * elemMatchBonus * techLvBonus : 1.0;
+            double meridianTechAmp = 1.0 + md.TechMultiplierAdd;
+            double techHpMult = tech != null ? tech.HpMultiplier * elemMatchBonus * techLvBonus * meridianTechAmp : meridianTechAmp;
+            double techAtkMult = tech != null ? tech.AtkMultiplier * elemMatchBonus * techLvBonus * meridianTechAmp : meridianTechAmp;
+            double techDefMult = tech != null ? tech.DefMultiplier * elemMatchBonus * techLvBonus * meridianTechAmp : meridianTechAmp;
 
             double rawHp = (rCfg.BaseHp * statStageMult + ch.Innate.Constitution * 14.0) * techHpMult;
             double rawMp = (rCfg.BaseMp * statStageMult + ch.Innate.Comprehension * 7.0);
@@ -60,6 +64,13 @@ namespace SIGTool.Modules.Logics
             }
 
             // SYS-01 叠加护山大阵镶嵌法宝词条与连携阵势增益（掌门享100%大阵加持，门人享65%大阵余荫）
+            // 叠加经脉固定属性与百分比增幅
+            rawHp = (rawHp + md.FlatHp) * (1.0 + md.PctHp);
+            rawMp += md.FlatMp;
+            rawAtk = (rawAtk + md.FlatAtk) * (1.0 + md.PctAtk);
+            rawDef = (rawDef + md.FlatDef) * (1.0 + md.PctDef);
+            rawSpd += md.FlatSpeed;
+
             var fm = ArtifactFormationLogic.ComputeFormationSummary(sect);
             double fmShare = ch.IsSectLeader ? 1.0 : 0.65;
             rawHp = (rawHp + fm.FlatHp * fmShare) * (1.0 + fm.PctHp * fmShare);
@@ -76,9 +87,9 @@ namespace SIGTool.Modules.Logics
             ch.BattleStats.Attack = Math.Round(rawAtk, 1);
             ch.BattleStats.Defense = Math.Round(rawDef, 1);
             ch.BattleStats.Speed = Math.Round(rawSpd, 1);
-            ch.BattleStats.CritRate = Math.Min(0.75, 0.05 + ch.Innate.Fortune * 0.008 + fm.CritRateAdd * fmShare);
-            ch.BattleStats.DodgeRate = Math.Min(0.55, 0.03 + ch.Innate.Agility * 0.005 + fm.DodgeRateAdd * fmShare);
-            ch.BattleStats.LifestealRate = Math.Min(0.50, fm.LifestealRateAdd * fmShare);
+            ch.BattleStats.CritRate = Math.Min(0.80, 0.05 + ch.Innate.Fortune * 0.008 + md.CritRateAdd + fm.CritRateAdd * fmShare);
+            ch.BattleStats.DodgeRate = Math.Min(0.60, 0.03 + ch.Innate.Agility * 0.005 + md.DodgeRateAdd + fm.DodgeRateAdd * fmShare);
+            ch.BattleStats.LifestealRate = Math.Min(0.55, md.LifestealRateAdd + fm.LifestealRateAdd * fmShare);
 
             ch.BattleStats.CurHp = Math.Max(1.0, Math.Min(ch.BattleStats.MaxHp, Math.Round(ch.BattleStats.MaxHp * hpRatio, 0)));
             ch.BattleStats.CurMp = Math.Max(0.0, Math.Min(ch.BattleStats.MaxMp, Math.Round(ch.BattleStats.MaxMp * mpRatio, 0)));
@@ -114,10 +125,12 @@ namespace SIGTool.Modules.Logics
                 techMult *= 1.18;
             }
 
+            var md = MeridianLogic.ComputeMeridianSummary(ch);
+            double meridianQiMult = (1.0 + md.QiRatePctAdd) * (1.0 + md.TechMultiplierAdd * 0.5);
             double sectAuraBonus = 1.0 + SectBuildLogic.GetTotalSectAuraBonus(sect);
             double jobMult = (!ch.IsSectLeader && ch.AssignedJob != DiscipleJob.Cultivate) ? 0.35 : 1.0;
 
-            return rCfg.BaseQiPerSec * rootMult * compMult * techMult * sectAuraBonus * jobMult;
+            return rCfg.BaseQiPerSec * rootMult * compMult * techMult * meridianQiMult * sectAuraBonus * jobMult;
         }
 
         public static string PreviewTechniqueDelta(CharacterData ch, SectManageData sect, string candidateTechId)
@@ -232,7 +245,8 @@ namespace SIGTool.Modules.Logics
             if (ch.SubStage < rCfg.MaxSubStage) return 1.0;
 
             var fm = ArtifactFormationLogic.ComputeFormationSummary(sect);
-            double rate = rCfg.BreakthroughBaseRate + ch.Innate.Comprehension * 0.012 + ch.Innate.Fortune * 0.005 + fm.BreakthroughRateAdd;
+            var md = MeridianLogic.ComputeMeridianSummary(ch);
+            double rate = rCfg.BreakthroughBaseRate + ch.Innate.Comprehension * 0.012 + ch.Innate.Fortune * 0.005 + fm.BreakthroughRateAdd + md.BreakthroughRateAdd;
 
             if (!string.IsNullOrEmpty(rCfg.RecommendedPillId) && sect != null && sect.GetItemCount(rCfg.RecommendedPillId) > 0)
             {

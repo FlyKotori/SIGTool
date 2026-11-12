@@ -72,6 +72,10 @@ namespace SIGTool.Datas
         public int AlchemySkillLv { get; set; } = 1;
         public int ForgeSkillLv { get; set; } = 1;
 
+        // SYS-02 经脉穴位树：已贯通穴位 ID 列表与冲穴失败保底祝福计数
+        public List<string> UnlockedAcupointIds { get; set; } = new List<string>();
+        public Dictionary<string, int> AcupointFailPity { get; set; } = new Dictionary<string, int>();
+
         public int GetTechniqueLevel(string techId)
         {
             if (string.IsNullOrEmpty(techId)) return 1;
@@ -87,6 +91,8 @@ namespace SIGTool.Datas
             if (QuickCombatPills == null) QuickCombatPills = new List<string>();
             while (QuickCombatPills.Count < 3) QuickCombatPills.Add("");
             if (TechniqueLevels == null) TechniqueLevels = new Dictionary<string, int>();
+            if (UnlockedAcupointIds == null) UnlockedAcupointIds = new List<string>();
+            if (AcupointFailPity == null) AcupointFailPity = new Dictionary<string, int>();
         }
 
         public double EstimateCombatPower()

@@ -166,12 +166,21 @@ namespace SIGTool.Modules.Logics
                 return;
             }
 
-            // 1. 掌门全功法满层
+            // 1. 掌门全功法满层 + 奇经24穴全部贯通
             if (save.Leader.TechniqueLevels == null) save.Leader.TechniqueLevels = new Dictionary<string, int>();
             foreach (var tech in SIGConfigTable.Current.Techniques)
             {
                 save.Leader.TechniqueLevels[tech.Id] = tech.MaxLevel;
             }
+            MeridianLogic.EnsureMeridianInitialized(save.Leader);
+            foreach (var acu in SIGConfigTable.Current.Acupoints)
+            {
+                if (!save.Leader.UnlockedAcupointIds.Contains(acu.Id))
+                {
+                    save.Leader.UnlockedAcupointIds.Add(acu.Id);
+                }
+            }
+            save.Leader.AcupointFailPity.Clear();
 
             // 2. 灵脉地块全解锁 + 已建建筑升至满阶
             int upgradedBlds = 0;
@@ -209,7 +218,7 @@ namespace SIGTool.Modules.Logics
             save.Sect.BarrierCurHp = save.Sect.BarrierMaxHp;
             CultivationLogic.RecalculateAllCharacters(save);
 
-            message = string.Format("[测试台] 已满级全部功法、解锁全灵脉/全九宫阵眼/全秘境，并将 {0} 座现有建筑升至满阶。", upgradedBlds);
+            message = string.Format("[测试台] 已贯通奇经全24穴、满级全部功法、解锁全灵脉/全九宫阵眼/全秘境，并将 {0} 座现有建筑升至满阶。", upgradedBlds);
             if (bus != null)
             {
                 bus.PublishLog(save.GetImmortalDateText(), LogCategory.System, message);

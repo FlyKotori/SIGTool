@@ -20,6 +20,7 @@ namespace SIGTool.Configs
         private static Dictionary<string, EnemyTemplateConfig> _enemyMap = new Dictionary<string, EnemyTemplateConfig>();
         private static Dictionary<string, CombatStageConfig> _stageMap = new Dictionary<string, CombatStageConfig>();
         private static Dictionary<string, ArtifactTemplateConfig> _artifactTplMap = new Dictionary<string, ArtifactTemplateConfig>();
+        private static Dictionary<string, AcupointNodeConfig> _acupointMap = new Dictionary<string, AcupointNodeConfig>();
 
         static SIGConfigTable()
         {
@@ -32,6 +33,10 @@ namespace SIGTool.Configs
             if (root.ArtifactTemplates == null || root.ArtifactTemplates.Count == 0)
             {
                 root.ArtifactTemplates = CreateDefaultArtifactTemplates();
+            }
+            if (root.Acupoints == null || root.Acupoints.Count == 0)
+            {
+                root.Acupoints = CreateDefaultAcupoints();
             }
             Current = root;
 
@@ -51,6 +56,7 @@ namespace SIGTool.Configs
             _enemyMap = (root.Enemies ?? new List<EnemyTemplateConfig>()).ToDictionary(x => x.Id, x => x);
             _stageMap = (root.Stages ?? new List<CombatStageConfig>()).ToDictionary(x => x.Id, x => x);
             _artifactTplMap = (root.ArtifactTemplates ?? new List<ArtifactTemplateConfig>()).ToDictionary(x => x.Id, x => x);
+            _acupointMap = (root.Acupoints ?? new List<AcupointNodeConfig>()).ToDictionary(x => x.Id, x => x);
         }
 
         public static RealmConfig GetRealm(RealmTier tier)
@@ -107,6 +113,51 @@ namespace SIGTool.Configs
             if (string.IsNullOrEmpty(id)) return null;
             ArtifactTemplateConfig cfg;
             return _artifactTplMap.TryGetValue(id, out cfg) ? cfg : null;
+        }
+
+        public static AcupointNodeConfig GetAcupoint(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            AcupointNodeConfig cfg;
+            return _acupointMap.TryGetValue(id, out cfg) ? cfg : null;
+        }
+
+        private static List<AcupointNodeConfig> CreateDefaultAcupoints()
+        {
+            return new List<AcupointNodeConfig>
+            {
+                // 1. 督脉·乾阳（6穴：主攻伐与功法倍率乘区）
+                new AcupointNodeConfig { Id = "ACU_DU_1", NameCn = "长强穴", ShortName = "1.长强", BranchKey = "DuMai", OrderIndex = 1, PrerequisiteId = "", MinRealmKey = "QiCondensation", CostQi = 160, CostSpiritStone = 45, CostHerb = 12, CostMonsterCore = 0, BaseSuccessRate = 0.90, FlatAtk = 12, TechMultAdd = 0.03, Desc = "督脉起穴，贯通尾闾真阳，强化杀伐锋芒与主修功法运转。" },
+                new AcupointNodeConfig { Id = "ACU_DU_2", NameCn = "命门穴", ShortName = "2.命门", BranchKey = "DuMai", OrderIndex = 2, PrerequisiteId = "ACU_DU_1", MinRealmKey = "QiCondensation", CostQi = 320, CostSpiritStone = 85, CostHerb = 22, CostMonsterCore = 1, BaseSuccessRate = 0.82, FlatAtk = 20, FlatHp = 60, TechMultAdd = 0.04, Desc = "生命真火所系，培固元阳并放大主修功法威能。" },
+                new AcupointNodeConfig { Id = "ACU_DU_3", NameCn = "至阳穴", ShortName = "3.至阳", BranchKey = "DuMai", OrderIndex = 3, PrerequisiteId = "ACU_DU_2", MinRealmKey = "Foundation", CostQi = 850, CostSpiritStone = 180, CostHerb = 40, CostMonsterCore = 2, BaseSuccessRate = 0.74, FlatAtk = 38, TechMultAdd = 0.05, Desc = "背脊纯阳枢纽，剑气法诀运转无碍。" },
+                new AcupointNodeConfig { Id = "ACU_DU_4", NameCn = "大椎穴", ShortName = "4.大椎", BranchKey = "DuMai", OrderIndex = 4, PrerequisiteId = "ACU_DU_3", MinRealmKey = "Foundation", CostQi = 1600, CostSpiritStone = 320, CostHerb = 65, CostMonsterCore = 4, BaseSuccessRate = 0.66, FlatAtk = 62, FlatDef = 18, TechMultAdd = 0.06, Desc = "诸阳之会，统摄周身阳脉，显著拔高功法乘区。" },
+                new AcupointNodeConfig { Id = "ACU_DU_5", NameCn = "玉枕穴", ShortName = "5.玉枕", BranchKey = "DuMai", OrderIndex = 5, PrerequisiteId = "ACU_DU_4", MinRealmKey = "GoldenCore", CostQi = 4200, CostSpiritStone = 650, CostHerb = 110, CostMonsterCore = 8, BaseSuccessRate = 0.58, FlatAtk = 105, FlatMp = 90, TechMultAdd = 0.07, Desc = "后脑天关险隘，冲破后神识清明、道法倍增。" },
+                new AcupointNodeConfig { Id = "ACU_DU_6", NameCn = "百会穴", ShortName = "6.百会", BranchKey = "DuMai", OrderIndex = 6, PrerequisiteId = "ACU_DU_5", MinRealmKey = "NascentSoul", CostQi = 12000, CostSpiritStone = 1400, CostHerb = 220, CostMonsterCore = 15, BaseSuccessRate = 0.50, FlatAtk = 180, FlatMp = 180, TechMultAdd = 0.10, Desc = "顶门天灵极窍，一穴开而督脉全通，直引九天罡气入体。" },
+
+                // 2. 任脉·坤阴（6穴：主气海吐纳、法力与寿元）
+                new AcupointNodeConfig { Id = "ACU_REN_1", NameCn = "会阴穴", ShortName = "1.会阴", BranchKey = "RenMai", OrderIndex = 1, PrerequisiteId = "", MinRealmKey = "QiCondensation", CostQi = 150, CostSpiritStone = 40, CostHerb = 14, CostMonsterCore = 0, BaseSuccessRate = 0.90, FlatMp = 35, QiRatePctAdd = 0.06, LifespanAdd = 8, Desc = "任脉海底源头，聚敛阴灵清气，加快日常打坐吐纳。" },
+                new AcupointNodeConfig { Id = "ACU_REN_2", NameCn = "关元穴", ShortName = "2.关元", BranchKey = "RenMai", OrderIndex = 2, PrerequisiteId = "ACU_REN_1", MinRealmKey = "QiCondensation", CostQi = 300, CostSpiritStone = 80, CostHerb = 24, CostMonsterCore = 1, BaseSuccessRate = 0.82, FlatHp = 80, QiRatePctAdd = 0.08, LifespanAdd = 12, Desc = "玄关藏元之所，固本培元，延年益寿。" },
+                new AcupointNodeConfig { Id = "ACU_REN_3", NameCn = "气海穴", ShortName = "3.气海", BranchKey = "RenMai", OrderIndex = 3, PrerequisiteId = "ACU_REN_2", MinRealmKey = "Foundation", CostQi = 800, CostSpiritStone = 170, CostHerb = 45, CostMonsterCore = 2, BaseSuccessRate = 0.74, FlatMp = 80, QiRatePctAdd = 0.10, TechMultAdd = 0.03, LifespanAdd = 18, Desc = "丹田真气生发之海，吞吐天地灵机效率大增。" },
+                new AcupointNodeConfig { Id = "ACU_REN_4", NameCn = "膻中穴", ShortName = "4.膻中", BranchKey = "RenMai", OrderIndex = 4, PrerequisiteId = "ACU_REN_3", MinRealmKey = "Foundation", CostQi = 1500, CostSpiritStone = 300, CostHerb = 70, CostMonsterCore = 4, BaseSuccessRate = 0.66, FlatMp = 130, QiRatePctAdd = 0.12, LifespanAdd = 25, Desc = "中丹田宗气枢机，气机流转绵密不绝。" },
+                new AcupointNodeConfig { Id = "ACU_REN_5", NameCn = "天突穴", ShortName = "5.天突", BranchKey = "RenMai", OrderIndex = 5, PrerequisiteId = "ACU_REN_4", MinRealmKey = "GoldenCore", CostQi = 4000, CostSpiritStone = 620, CostHerb = 120, CostMonsterCore = 8, BaseSuccessRate = 0.58, FlatMp = 200, QiRatePctAdd = 0.15, TechMultAdd = 0.04, LifespanAdd = 35, Desc = "咽喉十二重楼要冲，吐故纳新如鲸吞灵雾。" },
+                new AcupointNodeConfig { Id = "ACU_REN_6", NameCn = "承浆穴", ShortName = "6.承浆", BranchKey = "RenMai", OrderIndex = 6, PrerequisiteId = "ACU_REN_5", MinRealmKey = "NascentSoul", CostQi = 11500, CostSpiritStone = 1350, CostHerb = 240, CostMonsterCore = 15, BaseSuccessRate = 0.50, FlatMp = 320, QiRatePctAdd = 0.20, LifespanAdd = 60, Desc = "玉池琼浆玄窍，与督脉百会相接即可结成任督小周天。" },
+
+                // 3. 冲脉·血海（6穴：主气血上限与护体防御）
+                new AcupointNodeConfig { Id = "ACU_CHONG_1", NameCn = "气冲穴", ShortName = "1.气冲", BranchKey = "ChongMai", OrderIndex = 1, PrerequisiteId = "", MinRealmKey = "QiCondensation", CostQi = 160, CostSpiritStone = 45, CostHerb = 15, CostMonsterCore = 0, BaseSuccessRate = 0.88, FlatHp = 110, FlatDef = 6, Desc = "十二经血海之始，气血充盈，强化道躯抗击能力。" },
+                new AcupointNodeConfig { Id = "ACU_CHONG_2", NameCn = "大赫穴", ShortName = "2.大赫", BranchKey = "ChongMai", OrderIndex = 2, PrerequisiteId = "ACU_CHONG_1", MinRealmKey = "QiCondensation", CostQi = 340, CostSpiritStone = 90, CostHerb = 26, CostMonsterCore = 1, BaseSuccessRate = 0.80, FlatHp = 190, FlatDef = 12, Desc = "精血赫盛，护体罡气愈发凝实。" },
+                new AcupointNodeConfig { Id = "ACU_CHONG_3", NameCn = "商曲穴", ShortName = "3.商曲", BranchKey = "ChongMai", OrderIndex = 3, PrerequisiteId = "ACU_CHONG_2", MinRealmKey = "Foundation", CostQi = 900, CostSpiritStone = 190, CostHerb = 48, CostMonsterCore = 2, BaseSuccessRate = 0.72, FlatHp = 340, FlatDef = 22, Desc = "中焦血脉盘曲之窍，受创恢复与耐战力显著增强。" },
+                new AcupointNodeConfig { Id = "ACU_CHONG_4", NameCn = "幽门穴", ShortName = "4.幽门", BranchKey = "ChongMai", OrderIndex = 4, PrerequisiteId = "ACU_CHONG_3", MinRealmKey = "Foundation", CostQi = 1700, CostSpiritStone = 340, CostHerb = 75, CostMonsterCore = 4, BaseSuccessRate = 0.64, FlatHp = 560, FlatDef = 36, Desc = "冲脉入胸要户，稳固五脏心神不惧妖王凶威。" },
+                new AcupointNodeConfig { Id = "ACU_CHONG_5", NameCn = "通谷穴", ShortName = "5.通谷", BranchKey = "ChongMai", OrderIndex = 5, PrerequisiteId = "ACU_CHONG_4", MinRealmKey = "GoldenCore", CostQi = 4500, CostSpiritStone = 680, CostHerb = 130, CostMonsterCore = 8, BaseSuccessRate = 0.56, FlatHp = 950, FlatDef = 64, TechMultAdd = 0.04, Desc = "辟谷纳气、肉身渐趋金刚不坏。" },
+                new AcupointNodeConfig { Id = "ACU_CHONG_6", NameCn = "阴交穴", ShortName = "6.阴交", BranchKey = "ChongMai", OrderIndex = 6, PrerequisiteId = "ACU_CHONG_5", MinRealmKey = "NascentSoul", CostQi = 12500, CostSpiritStone = 1450, CostHerb = 250, CostMonsterCore = 16, BaseSuccessRate = 0.48, FlatHp = 1650, FlatDef = 115, LifespanAdd = 45, Desc = "诸阴交汇总枢，冲脉大成后可在斗法中汲取生机。" },
+
+                // 4. 带脉·天枢（6穴：主身法速度、暴击闪避与大境界渡劫率）
+                new AcupointNodeConfig { Id = "ACU_DAI_1", NameCn = "带脉穴", ShortName = "1.带脉", BranchKey = "DaiMai", OrderIndex = 1, PrerequisiteId = "", MinRealmKey = "QiCondensation", CostQi = 170, CostSpiritStone = 50, CostHerb = 12, CostMonsterCore = 0, BaseSuccessRate = 0.88, FlatSpeed = 5, DodgeRateAdd = 0.015, Desc = "环腰束纵诸经，身法轻灵，抢占斗法先手。" },
+                new AcupointNodeConfig { Id = "ACU_DAI_2", NameCn = "五枢穴", ShortName = "2.五枢", BranchKey = "DaiMai", OrderIndex = 2, PrerequisiteId = "ACU_DAI_1", MinRealmKey = "QiCondensation", CostQi = 350, CostSpiritStone = 95, CostHerb = 24, CostMonsterCore = 1, BaseSuccessRate = 0.80, FlatSpeed = 7, CritRateAdd = 0.02, BreakthroughRateAdd = 0.02, Desc = "五气灵枢流转，敏锐洞察敌阵破绽并稳固破境心境。" },
+                new AcupointNodeConfig { Id = "ACU_DAI_3", NameCn = "维道穴", ShortName = "3.维道", BranchKey = "DaiMai", OrderIndex = 3, PrerequisiteId = "ACU_DAI_2", MinRealmKey = "Foundation", CostQi = 920, CostSpiritStone = 200, CostHerb = 46, CostMonsterCore = 2, BaseSuccessRate = 0.72, FlatSpeed = 9, DodgeRateAdd = 0.025, BreakthroughRateAdd = 0.025, Desc = "维系阴阳气机不散，显著降低渡劫真元走岔风险。" },
+                new AcupointNodeConfig { Id = "ACU_DAI_4", NameCn = "居髎穴", ShortName = "4.居髎", BranchKey = "DaiMai", OrderIndex = 4, PrerequisiteId = "ACU_DAI_3", MinRealmKey = "Foundation", CostQi = 1750, CostSpiritStone = 350, CostHerb = 72, CostMonsterCore = 4, BaseSuccessRate = 0.64, FlatSpeed = 12, CritRateAdd = 0.03, DodgeRateAdd = 0.02, Desc = "步罡踏斗枢窍，身如惊鸿，剑招暴击倍增。" },
+                new AcupointNodeConfig { Id = "ACU_DAI_5", NameCn = "章门穴", ShortName = "5.章门", BranchKey = "DaiMai", OrderIndex = 5, PrerequisiteId = "ACU_DAI_4", MinRealmKey = "GoldenCore", CostQi = 4600, CostSpiritStone = 700, CostHerb = 125, CostMonsterCore = 9, BaseSuccessRate = 0.56, FlatSpeed = 15, CritRateAdd = 0.035, BreakthroughRateAdd = 0.035, Desc = "脏会章门，收束周天万象，渡劫抗雷威能大涨。" },
+                new AcupointNodeConfig { Id = "ACU_DAI_6", NameCn = "期门穴", ShortName = "6.期门", BranchKey = "DaiMai", OrderIndex = 6, PrerequisiteId = "ACU_DAI_5", MinRealmKey = "NascentSoul", CostQi = 13000, CostSpiritStone = 1500, CostHerb = 260, CostMonsterCore = 16, BaseSuccessRate = 0.48, FlatSpeed = 20, CritRateAdd = 0.045, DodgeRateAdd = 0.035, BreakthroughRateAdd = 0.05, Desc = "十二经循环终始之门，打通后天人交感，仙途坦荡。" }
+            };
         }
 
         private static List<ArtifactTemplateConfig> CreateDefaultArtifactTemplates()
@@ -235,6 +286,7 @@ namespace SIGTool.Configs
             };
 
             cfg.ArtifactTemplates = CreateDefaultArtifactTemplates();
+            cfg.Acupoints = CreateDefaultAcupoints();
             return cfg;
         }
     }

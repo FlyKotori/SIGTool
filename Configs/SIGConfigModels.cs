@@ -287,6 +287,58 @@ namespace SIGTool.Configs
     }
 
     /// <summary>
+    /// SYS-02 经脉穴位节点静态配表项
+    /// </summary>
+    public class AcupointNodeConfig
+    {
+        public string Id { get; set; } = "";
+        public string NameCn { get; set; } = "";
+        public string ShortName { get; set; } = "";
+        public string BranchKey { get; set; } = "DuMai";
+        public int OrderIndex { get; set; } = 1;
+        public string PrerequisiteId { get; set; } = "";
+        public string MinRealmKey { get; set; } = "Mortal";
+
+        public double CostQi { get; set; } = 100.0;
+        public double CostSpiritStone { get; set; } = 30.0;
+        public double CostHerb { get; set; } = 10.0;
+        public double CostMonsterCore { get; set; } = 0.0;
+        public double BaseSuccessRate { get; set; } = 0.85;
+
+        public double FlatHp { get; set; } = 0.0;
+        public double FlatMp { get; set; } = 0.0;
+        public double FlatAtk { get; set; } = 0.0;
+        public double FlatDef { get; set; } = 0.0;
+        public double FlatSpeed { get; set; } = 0.0;
+        public double LifespanAdd { get; set; } = 0.0;
+
+        public double TechMultAdd { get; set; } = 0.0;
+        public double QiRatePctAdd { get; set; } = 0.0;
+        public double CritRateAdd { get; set; } = 0.0;
+        public double DodgeRateAdd { get; set; } = 0.0;
+        public double BreakthroughRateAdd { get; set; } = 0.0;
+
+        public string Desc { get; set; } = "";
+
+        public string GetShortLabel()
+        {
+            return !string.IsNullOrEmpty(ShortName) ? ShortName : NameCn;
+        }
+
+        public MeridianBranchType GetBranch()
+        {
+            MeridianBranchType parsed;
+            return Enum.TryParse(BranchKey, true, out parsed) ? parsed : MeridianBranchType.DuMai;
+        }
+
+        public RealmTier GetMinRealm()
+        {
+            RealmTier parsed;
+            return Enum.TryParse(MinRealmKey, true, out parsed) ? parsed : RealmTier.Mortal;
+        }
+    }
+
+    /// <summary>
     /// SIG 静态配置总根对象
     /// </summary>
     public class SIGConfigRoot
@@ -300,5 +352,6 @@ namespace SIGTool.Configs
         public List<EnemyTemplateConfig> Enemies { get; set; } = new List<EnemyTemplateConfig>();
         public List<CombatStageConfig> Stages { get; set; } = new List<CombatStageConfig>();
         public List<ArtifactTemplateConfig> ArtifactTemplates { get; set; } = new List<ArtifactTemplateConfig>();
+        public List<AcupointNodeConfig> Acupoints { get; set; } = new List<AcupointNodeConfig>();
     }
 }

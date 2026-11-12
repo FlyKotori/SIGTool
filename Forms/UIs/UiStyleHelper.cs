@@ -607,6 +607,13 @@ namespace SIGTool.Forms.UIs
                 tb.BackColor = p.BgCard;
                 tb.ForeColor = p.TextPrimary;
             }
+            else if (root is TreeView)
+            {
+                var tv = (TreeView)root;
+                tv.BackColor = p.BgCard;
+                tv.ForeColor = p.TextPrimary;
+                tv.LineColor = p.BorderStrong;
+            }
 
             for (int i = 0; i < root.Controls.Count; i++)
             {

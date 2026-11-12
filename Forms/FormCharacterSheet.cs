@@ -112,6 +112,7 @@ namespace SIGTool.Forms
             double sectAura = SectBuildLogic.GetTotalSectAuraBonus(sect);
             double remainLife = Math.Max(0.0, ch.MaxLifespanYears - ch.AgeYears);
             var fm = ArtifactFormationLogic.ComputeFormationSummary(sect);
+            var md = MeridianLogic.ComputeMeridianSummary(ch);
 
             var wItem = SIGConfigTable.GetItem(ch.EquippedWeaponId);
             var aItem = SIGConfigTable.GetItem(ch.EquippedArmorId);
@@ -139,7 +140,7 @@ namespace SIGTool.Forms
             sb.AppendLine(string.Format("  身    法：{0,-4} (影响出手速度与身法闪避率)", ch.Innate.Agility));
             sb.AppendLine(string.Format("  机    缘：{0,-4} (影响暴击率与渡劫天眷)", ch.Innate.Fortune));
             sb.AppendLine();
-            sb.AppendLine("【二、 后天完整战斗面板（已计入装备与九宫护山大阵词条）】");
+            sb.AppendLine("【二、 后天完整战斗面板（已计入经脉周天、装备与九宫护山大阵）】");
             sb.AppendLine(string.Format("  气血(HP)：{0:F0} / {1:F0}      法力(MP)：{2:F0} / {3:F0}",
                 ch.BattleStats.CurHp, ch.BattleStats.MaxHp, ch.BattleStats.CurMp, ch.BattleStats.MaxMp));
             sb.AppendLine(string.Format("  攻击(ATK)：{0,-8:F1}          防御(DEF)：{1:F1}",
@@ -158,6 +159,17 @@ namespace SIGTool.Forms
             sb.AppendLine(string.Format("  百艺造诣：农采 Lv.{0}   |   丹道 Lv.{1}   |   器道 Lv.{2}",
                 ch.GatherSkillLv, ch.AlchemySkillLv, ch.ForgeSkillLv));
             sb.AppendLine(string.Format("  穿戴法器：剑[{0}]  衣[{1}]  宝[{2}]", wpn, arm, tal));
+
+            sb.AppendLine();
+            sb.AppendLine("【奇经八脉与周天造化（SYS-02）】");
+            string ztTitle = md.HasDaZhouTian ? "乾坤大周天圆满"
+                : (md.HasXiaoZhouTian ? "任督小周天贯通" : "奇经筑脉中");
+            sb.AppendLine(string.Format("  贯通穴位：{0} / {1} 穴      周天境况：{2}",
+                md.UnlockedCount, md.TotalCount, ztTitle));
+            sb.AppendLine(string.Format("  四脉进度：督脉 {0}/6 | 任脉 {1}/6 | 冲脉 {2}/6 | 带脉 {3}/6",
+                md.DuMaiUnlocked, md.RenMaiUnlocked, md.ChongMaiUnlocked, md.DaiMaiUnlocked));
+            sb.AppendLine(string.Format("  经脉乘区：功法总倍率 +{0:P0}  |  吐纳速率 +{1:P0}  |  渡劫成功率 +{2:P1}",
+                md.TechMultiplierAdd, md.QiRatePctAdd, md.BreakthroughRateAdd));
 
             _txtFullSheet.Text = sb.ToString();
             _txtFullSheet.SelectionStart = 0;

@@ -29,6 +29,7 @@ namespace SIGTool.Forms
         private UcDiscipleCraftPanel _ucDiscipleCraft;
         private UcCombatExplorePanel _ucCombatExplore;
         private UcArtifactArrayPanel _ucArtifactArray;
+        private UcMeridianPanel _ucMeridian;
 
         private UcLogConsole _ucLogConsole;
         private UcStatusFeedbackStrip _statusStrip;
@@ -122,21 +123,24 @@ namespace SIGTool.Forms
             var tab3 = new TabPage("3. 门人百艺 (排班/丹器)");
             var tab4 = new TabPage("4. 秘境斗法 (历练/防卫)");
             var tab5 = new TabPage("5. 法宝大阵 (九宫/词条)");
+            var tab6 = new TabPage("6. 经脉周天 (奇经/冲穴)");
 
             _ucCultivation = new UcCultivationPanel(_engine, OpenOrFocusCharSheetWindow);
             _ucSectBuild = new UcSectBuildPanel(_engine);
             _ucDiscipleCraft = new UcDiscipleCraftPanel(_engine, OpenOrFocusCharSheetWindow);
             _ucCombatExplore = new UcCombatExplorePanel(_engine, OpenOrFocusCombatWindow);
             _ucArtifactArray = new UcArtifactArrayPanel(_engine);
+            _ucMeridian = new UcMeridianPanel(_engine);
 
             tab1.Controls.Add(_ucCultivation);
             tab2.Controls.Add(_ucSectBuild);
             tab3.Controls.Add(_ucDiscipleCraft);
             tab4.Controls.Add(_ucCombatExplore);
             tab5.Controls.Add(_ucArtifactArray);
+            tab6.Controls.Add(_ucMeridian);
 
-            _tabMain.TabPages.AddRange(new TabPage[] { tab1, tab2, tab3, tab4, tab5 });
-            UiStyleHelper.SetToolTip(_tabMain, "快捷键切换页签：F1 修仙吐纳 / F2 宗门营造 / F3 门人百艺 / F4 秘境斗法 / F5 法宝大阵");
+            _tabMain.TabPages.AddRange(new TabPage[] { tab1, tab2, tab3, tab4, tab5, tab6 });
+            UiStyleHelper.SetToolTip(_tabMain, "快捷键切换页签：F1 修仙吐纳 / F2 宗门营造 / F3 门人百艺 / F4 秘境斗法 / F5 法宝大阵 / F6 经脉周天");
             _tabMain.SelectedIndexChanged += (s, e) =>
             {
                 UpdateStatusShortcutHint();
@@ -190,6 +194,10 @@ namespace SIGTool.Forms
                     break;
                 case AlertTargetKind.LowFoodWarning:
                     UiFeedbackService.PushWarning("门人口粮偏低，建议增建【神农灵田】或改派门人前往百草灵农。");
+                    break;
+                case AlertTargetKind.ReadyAcupoint:
+                    _ucMeridian.FocusAcupoint(req.EntityId);
+                    UiFeedbackService.PushInfo("已定位至可贯通穴位（双击或按 Enter 即可催动真元冲穴）。");
                     break;
             }
             RefreshActiveViews();
@@ -488,7 +496,7 @@ namespace SIGTool.Forms
 
             string targetTitle = s.UseMinimalWindowTitle
                 ? "SIGTool"
-                : "SIGTool v0.7 - 挂机修仙 · 宗门营造 · 秘境斗法 · 九宫阵宝 (.NET Framework 4.7.2)";
+                : "SIGTool v0.8 - 挂机修仙 · 宗门营造 · 秘境斗法 · 奇经周天 (.NET Framework 4.7.2)";
             if (this.Text != targetTitle) this.Text = targetTitle;
 
             if (_headerBar != null)
@@ -575,6 +583,9 @@ namespace SIGTool.Forms
                 case 4:
                     _ucArtifactArray.RefreshView();
                     break;
+                case 5:
+                    _ucMeridian.RefreshView();
+                    break;
             }
 
             if (_combatPopupForm != null && !_combatPopupForm.IsDisposed && _combatPopupForm.Visible)
@@ -654,22 +665,25 @@ namespace SIGTool.Forms
             switch (_tabMain.SelectedIndex)
             {
                 case 0:
-                    tabHint = "F1-F5:切页 | 1-3:服丹 P:破境 | ←↑↓→/Enter:选功法 | Space:暂停 B:储物 C:属性 F12:测试台";
+                    tabHint = "F1-F6:切页 | 1-3:服丹 P:破境 | ←↑↓→/Enter:选功法 | Space:暂停 B:储物 C:属性 F12:测试台";
                     break;
                 case 1:
-                    tabHint = "F1-F5:切页 | ←↑↓→/Enter:选建筑(Ctrl+方向键:选灵脉) | Space:暂停 B:储物 F12:测试台";
+                    tabHint = "F1-F6:切页 | ←↑↓→/Enter:选建筑(Ctrl+方向键:选灵脉) | Space:暂停 B:储物 F12:测试台";
                     break;
                 case 2:
-                    tabHint = "F1-F5:切页 | R:招募 M:百艺总谱 | Space:暂停 1-3:服丹 B:储物 C:属性 F12:测试台";
+                    tabHint = "F1-F6:切页 | R:招募 M:百艺总谱 | Space:暂停 1-3:服丹 B:储物 C:属性 F12:测试台";
                     break;
                 case 3:
-                    tabHint = "F1-F5:切页 | Space:出征/撤退 1-3:战丹 Q/E:神通 | ←↑↓→/Enter:选秘境 | V:战报 F12:测试台";
+                    tabHint = "F1-F6:切页 | Space:出征/撤退 1-3:战丹 Q/E:神通 | ←↑↓→/Enter:选秘境 | V:战报 F12:测试台";
                     break;
                 case 4:
-                    tabHint = "F1-F5:切页 | ←↑↓→/Enter:选法宝(Ctrl+方向键:选阵眼) | Space:暂停 B:储物 F12:测试台";
+                    tabHint = "F1-F6:切页 | ←↑↓→/Enter:选法宝(Ctrl+方向键:选阵眼) | Space:暂停 B:储物 F12:测试台";
+                    break;
+                case 5:
+                    tabHint = "F1-F6:切页 | ←↑↓→/Enter:选穴冲脉 | 1-3:服丹充气 | Space:暂停 C:属性 F12:测试台";
                     break;
                 default:
-                    tabHint = "F1-F5:切页 | 1-3:服丹 | Space:暂停 | B:储物 C:属性 F12:测试台";
+                    tabHint = "F1-F6:切页 | 1-3:服丹 | Space:暂停 | B:储物 C:属性 F12:测试台";
                     break;
             }
             _statusStrip.SetRightHint(tabHint);
@@ -686,7 +700,7 @@ namespace SIGTool.Forms
                 OpenOrFocusDevConsole();
                 return true;
             }
-            if (keyData >= Keys.F1 && keyData <= Keys.F5)
+            if (keyData >= Keys.F1 && keyData <= Keys.F6)
             {
                 int targetTab = (int)(keyData - Keys.F1);
                 if (targetTab >= 0 && targetTab < _tabMain.TabPages.Count)
@@ -871,6 +885,7 @@ namespace SIGTool.Forms
                         case 1: handled = _ucSectBuild.HandleKeyboardNavigation(keyData); break;
                         case 3: handled = _ucCombatExplore.HandleKeyboardNavigation(keyData); break;
                         case 4: handled = _ucArtifactArray.HandleKeyboardNavigation(keyData); break;
+                        case 5: handled = _ucMeridian.HandleKeyboardNavigation(keyData); break;
                     }
                     if (handled) return true;
                 }

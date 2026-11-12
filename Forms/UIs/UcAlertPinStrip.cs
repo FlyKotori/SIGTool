@@ -18,7 +18,8 @@ namespace SIGTool.Forms.UIs
         EmptyVeinSlot = 3,
         EmptyFormationEye = 4,
         IdleExpedition = 5,
-        LowFoodWarning = 6
+        LowFoodWarning = 6,
+        ReadyAcupoint = 7
     }
 
     public class AlertJumpRequest
@@ -122,6 +123,16 @@ namespace SIGTool.Forms.UIs
                     "[★ 掌门可破境]",
                     new AlertJumpRequest { Kind = AlertTargetKind.LeaderBreakthrough, TargetTabIndex = 0 }));
                 roles.Add(UiButtonRole.WarningAmber);
+            }
+
+            // 1b. 掌门存在可立即冲击的奇经穴位
+            var readyAcu = MeridianLogic.FindFirstReadyAcupoint(save);
+            if (readyAcu != null)
+            {
+                items.Add(new KeyValuePair<string, AlertJumpRequest>(
+                    string.Format("[● 可冲穴:{0}]", readyAcu.NameCn),
+                    new AlertJumpRequest { Kind = AlertTargetKind.ReadyAcupoint, TargetTabIndex = 5, EntityId = readyAcu.Id }));
+                roles.Add(UiButtonRole.PositiveGreen);
             }
 
             // 2. 门人弟子大境界满气海待破境

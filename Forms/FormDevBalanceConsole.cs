@@ -470,14 +470,16 @@ namespace SIGTool.Forms
             var rCfg = SIGConfigTable.GetRealm(ld.Realm);
             int guardCnt = _engine.Save.Disciples.Count(d => d.AssignedJob == DiscipleJob.Guard);
             var fm = ArtifactFormationLogic.ComputeFormationSummary(_engine.Save.Sect);
+            var md = MeridianLogic.ComputeMeridianSummary(ld);
 
             _lblBaselineSummary.Text = string.Format(
-                "基准: {0} | 战力 {1:F0} (攻{2:F0}/防{3:F0}/血{4:F0}) | 随战剑卫 {5} 人 | 镶阵 {6}/9 件",
+                "基准: {0} | 战力 {1:F0} (攻{2:F0}/防{3:F0}/血{4:F0}) | 经脉 {5}/24 | 剑卫 {6} 人 | 镶阵 {7}/9",
                 EnumTextMap.RealmFullCn(ld.Realm, ld.SubStage, rCfg.MaxSubStage),
                 ld.EstimateCombatPower(),
                 ld.BattleStats.Attack,
                 ld.BattleStats.Defense,
                 ld.BattleStats.MaxHp,
+                md.UnlockedCount,
                 Math.Min(2, guardCnt),
                 fm.SlottedCount);
         }
