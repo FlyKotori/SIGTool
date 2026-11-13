@@ -339,6 +339,113 @@ namespace SIGTool.Configs
     }
 
     /// <summary>
+    /// SYS-03 周边修仙宗门/世家静态配置项
+    /// </summary>
+    public class WorldFactionConfig
+    {
+        public string Id { get; set; } = "";
+        public string NameCn { get; set; } = "";
+        public string ShortName { get; set; } = "";
+        public string AlignmentKey { get; set; } = "Righteous"; // Righteous / Neutral / Demonic
+        public string SpecialtyTag { get; set; } = "";
+        public int InitProsperity { get; set; } = 55;
+        public int InitRelation { get; set; } = 0;
+        public double DiplomacyStoneCost { get; set; } = 120.0;
+        public string FriendlyBonusDesc { get; set; } = "";
+        public string Desc { get; set; } = "";
+    }
+
+    /// <summary>
+    /// SYS-03 九州坊市大宗交易标的配置项
+    /// </summary>
+    public class MarketListingConfig
+    {
+        public string Id { get; set; } = "";
+        public string NameCn { get; set; } = "";
+        public string ShortName { get; set; } = "";
+        public string CategoryTag { get; set; } = "Material"; // Herb / Material / Core / Pill
+        public string ResourceKey { get; set; } = "";
+        public double ResourceBatchQty { get; set; } = 0.0;
+        public string ItemId { get; set; } = "";
+        public int ItemBatchQty { get; set; } = 0;
+        public double BaseBuyStone { get; set; } = 50.0;
+        public double BaseSellStone { get; set; } = 34.0;
+        public int QuarterMaxStock { get; set; } = 12;
+        public string Desc { get; set; } = "";
+
+        public string GetShortLabel()
+        {
+            return !string.IsNullOrEmpty(ShortName) ? ShortName : NameCn;
+        }
+    }
+
+    /// <summary>
+    /// SYS-03 奇遇事件分支抉择项配置
+    /// </summary>
+    public class EncounterOptionConfig
+    {
+        public string OptionTitle { get; set; } = "";
+        public string RiskTag { get; set; } = "稳妥无险";
+        public string PreviewGainText { get; set; } = "";
+        public string MinRealmKey { get; set; } = "Mortal";
+
+        public double CostSpiritStone { get; set; } = 0.0;
+        public double CostHerb { get; set; } = 0.0;
+        public double CostCurQiRatio { get; set; } = 0.0;
+
+        public double BaseSuccessRate { get; set; } = 1.0;
+
+        public double SuccessStone { get; set; } = 0.0;
+        public double SuccessHerb { get; set; } = 0.0;
+        public double SuccessOre { get; set; } = 0.0;
+        public double SuccessCore { get; set; } = 0.0;
+        public double SuccessReputation { get; set; } = 0.0;
+        public double SuccessQiGrant { get; set; } = 0.0;
+        public string SuccessItemId { get; set; } = "";
+        public int SuccessItemQty { get; set; } = 0;
+        public int SuccessArtifactTier { get; set; } = 0;
+
+        public string SuccessBuffName { get; set; } = "";
+        public int SuccessBuffMonths { get; set; } = 0;
+        public double SuccessTempAuraAdd { get; set; } = 0.0;
+        public double SuccessTempAtkAdd { get; set; } = 0.0;
+
+        public string TargetFactionId { get; set; } = "";
+        public int SuccessRelationDelta { get; set; } = 0;
+
+        public string NextChainEventId { get; set; } = "";
+        public int NextChainDelayMonths { get; set; } = 4;
+        public string SuccessOutcomeText { get; set; } = "";
+
+        public double FailHpLossRatio { get; set; } = 0.15;
+        public double FailReputationDelta { get; set; } = 0.0;
+        public string FailOutcomeText { get; set; } = "";
+
+        public RealmTier GetMinRealm()
+        {
+            RealmTier parsed;
+            return Enum.TryParse(MinRealmKey, true, out parsed) ? parsed : RealmTier.Mortal;
+        }
+    }
+
+    /// <summary>
+    /// SYS-03 结构化奇遇事件配置项（支持随机触发、大境界里程碑与多阶段连续事件链）
+    /// </summary>
+    public class EncounterEventConfig
+    {
+        public string Id { get; set; } = "";
+        public string TitleCn { get; set; } = "";
+        public string TriggerTypeKey { get; set; } = "RandomMonthly"; // RandomMonthly / RealmMilestone / ChainFollowup
+        public string TriggerRealmKey { get; set; } = "";
+        public int MinYear { get; set; } = 1;
+        public double Weight { get; set; } = 10.0;
+        public int ChainStep { get; set; } = 1;
+        public int ChainTotal { get; set; } = 1;
+        public string NarrativeDesc { get; set; } = "";
+        public List<EncounterOptionConfig> Options { get; set; } = new List<EncounterOptionConfig>();
+    }
+
+    /// <summary>
     /// SIG 静态配置总根对象
     /// </summary>
     public class SIGConfigRoot
@@ -353,5 +460,8 @@ namespace SIGTool.Configs
         public List<CombatStageConfig> Stages { get; set; } = new List<CombatStageConfig>();
         public List<ArtifactTemplateConfig> ArtifactTemplates { get; set; } = new List<ArtifactTemplateConfig>();
         public List<AcupointNodeConfig> Acupoints { get; set; } = new List<AcupointNodeConfig>();
+        public List<WorldFactionConfig> WorldFactions { get; set; } = new List<WorldFactionConfig>();
+        public List<MarketListingConfig> MarketListings { get; set; } = new List<MarketListingConfig>();
+        public List<EncounterEventConfig> EncounterEvents { get; set; } = new List<EncounterEventConfig>();
     }
 }

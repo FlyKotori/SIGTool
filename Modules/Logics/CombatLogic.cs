@@ -396,13 +396,14 @@ namespace SIGTool.Modules.Logics
             save.Sect.AddResource(ResourceType.SpiritHerb, cfg.DropHerb);
             save.Sect.AddResource(ResourceType.SpiritOre, cfg.DropOre);
 
+            double effCoreDrop = cfg.DropMonsterCore * WorldEvolutionLogic.GetMonsterCoreDropMultiplier(save);
             int cores = 0;
-            if (cfg.DropMonsterCore >= 1.0)
+            if (effCoreDrop >= 1.0)
             {
-                cores = (int)Math.Floor(cfg.DropMonsterCore);
-                if (rng.NextDouble() < (cfg.DropMonsterCore - cores)) cores++;
+                cores = (int)Math.Floor(effCoreDrop);
+                if (rng.NextDouble() < (effCoreDrop - cores)) cores++;
             }
-            else if (rng.NextDouble() < cfg.DropMonsterCore) cores = 1;
+            else if (rng.NextDouble() < effCoreDrop) cores = 1;
             if (cores > 0) save.Sect.AddResource(ResourceType.MonsterCore, cores);
 
             string extraLoot = "";

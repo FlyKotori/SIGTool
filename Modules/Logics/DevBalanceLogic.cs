@@ -505,5 +505,23 @@ namespace SIGTool.Modules.Logics
             }
             return list;
         }
+
+        /// <summary>
+        /// SYS-03 调试辅助：立即轮转一次九州岁运、刷新坊市行情并强制入队一条奇遇事件
+        /// </summary>
+        public static string TriggerTestEncounterAndShiftTrend(SIGSaveData save, Random rng, SIGEventBus bus)
+        {
+            if (save == null) return "存档为空。";
+            WorldEvolutionLogic.EnsureWorldInitialized(save);
+            save.World.MonthsUntilTrendShift = 1;
+            WorldEvolutionLogic.AdvanceMonthlyWorldEvolution(save, rng, allowEncounterTrigger: false, bus: bus);
+            bool spawned = WorldEvolutionLogic.TriggerRandomMonthlyEncounter(save, rng, bus);
+            WorldEvolutionLogic.SyncSectWorldModifiers(save);
+            if (bus != null) bus.NotifyStateChanged();
+            return string.Format("已轮转岁运至【{0}】并刷新坊市行情{1}（当前待决奇遇 {2}/3）。",
+                WorldEvolutionLogic.TrendNameCn(save.World.CurrentTrend),
+                spawned ? "，且新触发 1 桩奇遇" : "",
+                save.World.PendingEncounters.Count);
+        }
     }
 }

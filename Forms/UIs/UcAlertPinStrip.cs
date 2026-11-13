@@ -19,7 +19,8 @@ namespace SIGTool.Forms.UIs
         EmptyFormationEye = 4,
         IdleExpedition = 5,
         LowFoodWarning = 6,
-        ReadyAcupoint = 7
+        ReadyAcupoint = 7,
+        PendingEncounter = 8
     }
 
     public class AlertJumpRequest
@@ -123,6 +124,17 @@ namespace SIGTool.Forms.UIs
                     "[★ 掌门可破境]",
                     new AlertJumpRequest { Kind = AlertTargetKind.LeaderBreakthrough, TargetTabIndex = 0 }));
                 roles.Add(UiButtonRole.WarningAmber);
+            }
+
+            // 1a-world. 存在待抉择的非阻塞天机奇遇
+            if (save.World != null && save.World.PendingEncounters != null && save.World.PendingEncounters.Count > 0)
+            {
+                var firstEnc = SIGConfigTable.GetEncounterEvent(save.World.PendingEncounters[0].EventId);
+                string encTitle = firstEnc != null ? firstEnc.TitleCn : "天机机缘";
+                items.Add(new KeyValuePair<string, AlertJumpRequest>(
+                    string.Format("[★ 奇遇({0}):{1}]", save.World.PendingEncounters.Count, encTitle),
+                    new AlertJumpRequest { Kind = AlertTargetKind.PendingEncounter, TargetTabIndex = 6 }));
+                roles.Add(UiButtonRole.PrimaryBlue);
             }
 
             // 1b. 掌门存在可立即冲击的奇经穴位

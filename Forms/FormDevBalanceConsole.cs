@@ -228,13 +228,20 @@ namespace SIGTool.Forms
                 PushConsoleLine("[测试台] 已将掌门气海修为、气血与法力恢复至满值。", UiFeedbackLevel.Success);
                 RefreshBaselineInfo();
             }, UiButtonRole.Default, true);
-            var btnTriggerRaid = UiStyleHelper.CreateButton("立即触发兽潮", (s, e) =>
+            var btnTriggerRaid = UiStyleHelper.CreateButton("触发兽潮", (s, e) =>
             {
                 CombatLogic.StartSectRaid(_engine.Save, _engine.EventBus);
                 PushConsoleLine("[测试台] 已强制触发当前轮次护山兽潮攻城战。", UiFeedbackLevel.Warning);
                 RefreshBaselineInfo();
             }, UiButtonRole.DangerRed, true);
-            rowFacility.Controls.AddRange(new Control[] { btnMaxAll, btnFullRefill, btnTriggerRaid });
+            var btnTriggerWorld = UiStyleHelper.CreateButton("轮转岁运/奇遇", (s, e) =>
+            {
+                string wm = DevBalanceLogic.TriggerTestEncounterAndShiftTrend(_engine.Save, _engine.Rng, _engine.EventBus);
+                PushConsoleLine("[测试台] " + wm, UiFeedbackLevel.Success);
+                RefreshBaselineInfo();
+            }, UiButtonRole.PrimaryBlue, true);
+            UiStyleHelper.SetToolTip(btnTriggerWorld, "立即轮转下一年天道岁运、重算坊市行情并入队 1 桩随机奇遇（SYS-03）");
+            rowFacility.Controls.AddRange(new Control[] { btnMaxAll, btnFullRefill, btnTriggerRaid, btnTriggerWorld });
 
             tblInject.Controls.Add(rowFastForward, 0, 0);
             tblInject.Controls.Add(rowRes, 0, 1);
@@ -473,7 +480,7 @@ namespace SIGTool.Forms
             var md = MeridianLogic.ComputeMeridianSummary(ld);
 
             _lblBaselineSummary.Text = string.Format(
-                "基准: {0} | 战力 {1:F0} (攻{2:F0}/防{3:F0}/血{4:F0}) | 经脉 {5}/24 | 剑卫 {6} 人 | 镶阵 {7}/9",
+                "基准: {0} | 战力 {1:F0} (攻{2:F0}/防{3:F0}/血{4:F0}) | 经脉 {5}/24 | 剑卫 {6} 人 | 镶阵 {7}/9 | 岁运:{8}",
                 EnumTextMap.RealmFullCn(ld.Realm, ld.SubStage, rCfg.MaxSubStage),
                 ld.EstimateCombatPower(),
                 ld.BattleStats.Attack,
@@ -481,7 +488,8 @@ namespace SIGTool.Forms
                 ld.BattleStats.MaxHp,
                 md.UnlockedCount,
                 Math.Min(2, guardCnt),
-                fm.SlottedCount);
+                fm.SlottedCount,
+                _engine.Save.World != null ? WorldEvolutionLogic.TrendNameCn(_engine.Save.World.CurrentTrend) : "风调雨顺");
         }
 
         private int GetSelectedTrials()

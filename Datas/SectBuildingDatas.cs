@@ -58,6 +58,10 @@ namespace SIGTool.Datas
         public List<ArtifactInstanceData> ArtifactVault { get; set; } = new List<ArtifactInstanceData>();
         public List<FormationEyeSlotData> FormationEyes { get; set; } = new List<FormationEyeSlotData>();
 
+        // SYS-03 修仙界演化与盟友气运同步缓存（供修炼/战斗面板零耦合实时读取）
+        public double WorldAuraBonusCache { get; set; } = 0.0;
+        public double WorldAtkPctBonusCache { get; set; } = 0.0;
+
         public double GetResource(ResourceType type)
         {
             if (Resources == null) Resources = new Dictionary<string, double>();

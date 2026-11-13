@@ -37,6 +37,7 @@ namespace SIGTool.Modules.Core
             bool isNewSIG = (loaded == null);
             Save = loaded ?? SaveLoadService.CreateNewSIGSave();
 
+            WorldEvolutionLogic.EnsureWorldInitialized(Save);
             SectBuildLogic.RefreshSectDerivedCaps(Save);
             CultivationLogic.RecalculateAllCharacters(Save);
 
@@ -100,6 +101,7 @@ namespace SIGTool.Modules.Core
         public bool ReloadConfig(out string msg)
         {
             bool ok = ConfigLoader.LoadOrInitConfig(ConfigLoader.DefaultConfigFilePath, out msg);
+            WorldEvolutionLogic.EnsureWorldInitialized(Save);
             SectBuildLogic.RefreshSectDerivedCaps(Save);
             CultivationLogic.RecalculateAllCharacters(Save);
             EventBus.PublishLog(Save.GetImmortalDateText(), LogCategory.System, msg);
@@ -141,6 +143,7 @@ namespace SIGTool.Modules.Core
         public void ResetNewSIG()
         {
             Save = SaveLoadService.CreateNewSIGSave();
+            WorldEvolutionLogic.EnsureWorldInitialized(Save);
             SectBuildLogic.RefreshSectDerivedCaps(Save);
             CultivationLogic.RecalculateAllCharacters(Save);
             Save.Leader.BattleStats.CurHp = Save.Leader.BattleStats.MaxHp;
@@ -266,6 +269,7 @@ namespace SIGTool.Modules.Core
             }
 
             SectBuildLogic.SettleMonthlySectUpkeep(Save, EventBus);
+            WorldEvolutionLogic.AdvanceMonthlyWorldEvolution(Save, Rng, allowEncounterTrigger: allowRaidTrigger, bus: EventBus);
 
             if (allowRaidTrigger && Save.Combat.Mode != CombatMode.SectRaidDefense)
             {

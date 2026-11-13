@@ -84,6 +84,7 @@ namespace SIGTool.Modules.Core
             if (save.Sect.GridSlots == null) save.Sect.GridSlots = new List<SectGridSlotData>();
 
             ArtifactFormationLogic.EnsureFormationInitialized(save.Sect);
+            WorldEvolutionLogic.EnsureWorldInitialized(save);
 
             if (save.Combat == null) save.Combat = new CombatStateData();
             if (save.Combat.UnlockedStageIds == null) save.Combat.UnlockedStageIds = new List<string>();
@@ -231,6 +232,7 @@ namespace SIGTool.Modules.Core
 
             // SYS-01 初始化九宫护山大阵并赠送 2 件开山传承随机词条阵宝（1件镇守中宫天枢，1件置于库中供体验镶嵌对比）
             ArtifactFormationLogic.EnsureFormationInitialized(save.Sect);
+            WorldEvolutionLogic.EnsureWorldInitialized(save);
             var initRng = new Random(Guid.NewGuid().GetHashCode());
             var starterCore = ArtifactFormationLogic.GenerateRandomArtifact(save.Sect, initRng, 2, 2);
             var starterSpare = ArtifactFormationLogic.GenerateRandomArtifact(save.Sect, initRng, 1, 1);
@@ -244,6 +246,8 @@ namespace SIGTool.Modules.Core
             save.Combat.AutoRepeatExpedition = true;
 
             EnsureCollectionsInitialized(save);
+            WorldEvolutionLogic.RefreshMarketPricesAndStock(save, initRng, null, silentLog: true);
+            WorldEvolutionLogic.AppendChronicle(save, "太虚云隐宗重立山门，九州各大宗门与天机坊市恢复往来。");
             return save;
         }
     }

@@ -84,7 +84,8 @@ namespace SIGTool.Modules.Logics
 
             ch.BattleStats.MaxHp = Math.Round(rawHp, 0);
             ch.BattleStats.MaxMp = Math.Round(rawMp, 0);
-            ch.BattleStats.Attack = Math.Round(rawAtk, 1);
+            double worldAtkMult = (sect != null) ? (1.0 + sect.WorldAtkPctBonusCache) : 1.0;
+            ch.BattleStats.Attack = Math.Round(worldAtkMult * rawAtk, 1);
             ch.BattleStats.Defense = Math.Round(rawDef, 1);
             ch.BattleStats.Speed = Math.Round(rawSpd, 1);
             ch.BattleStats.CritRate = Math.Min(0.80, 0.05 + ch.Innate.Fortune * 0.008 + md.CritRateAdd + fm.CritRateAdd * fmShare);
@@ -343,6 +344,10 @@ namespace SIGTool.Modules.Logics
                 ch.BattleStats.CurHp = ch.BattleStats.MaxHp;
                 ch.BattleStats.CurMp = ch.BattleStats.MaxMp;
                 save.Sect.AddResource(ResourceType.SectReputation, 30.0 * (int)ch.Realm);
+                if (ch.IsSectLeader)
+                {
+                    WorldEvolutionLogic.CheckRealmMilestoneEncounter(save, ch.Realm, bus);
+                }
 
                 var nextCfg = SIGConfigTable.GetRealm(ch.Realm);
                 message = string.Format("★天劫散尽！【{0}】{1}成功破入【{2}】，寿元增至 {3:F0} 载！",

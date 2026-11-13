@@ -21,6 +21,9 @@ namespace SIGTool.Configs
         private static Dictionary<string, CombatStageConfig> _stageMap = new Dictionary<string, CombatStageConfig>();
         private static Dictionary<string, ArtifactTemplateConfig> _artifactTplMap = new Dictionary<string, ArtifactTemplateConfig>();
         private static Dictionary<string, AcupointNodeConfig> _acupointMap = new Dictionary<string, AcupointNodeConfig>();
+        private static Dictionary<string, WorldFactionConfig> _factionMap = new Dictionary<string, WorldFactionConfig>();
+        private static Dictionary<string, MarketListingConfig> _marketMap = new Dictionary<string, MarketListingConfig>();
+        private static Dictionary<string, EncounterEventConfig> _encounterMap = new Dictionary<string, EncounterEventConfig>();
 
         static SIGConfigTable()
         {
@@ -37,6 +40,18 @@ namespace SIGTool.Configs
             if (root.Acupoints == null || root.Acupoints.Count == 0)
             {
                 root.Acupoints = CreateDefaultAcupoints();
+            }
+            if (root.WorldFactions == null || root.WorldFactions.Count == 0)
+            {
+                root.WorldFactions = CreateDefaultWorldFactions();
+            }
+            if (root.MarketListings == null || root.MarketListings.Count == 0)
+            {
+                root.MarketListings = CreateDefaultMarketListings();
+            }
+            if (root.EncounterEvents == null || root.EncounterEvents.Count == 0)
+            {
+                root.EncounterEvents = CreateDefaultEncounterEvents();
             }
             Current = root;
 
@@ -57,6 +72,9 @@ namespace SIGTool.Configs
             _stageMap = (root.Stages ?? new List<CombatStageConfig>()).ToDictionary(x => x.Id, x => x);
             _artifactTplMap = (root.ArtifactTemplates ?? new List<ArtifactTemplateConfig>()).ToDictionary(x => x.Id, x => x);
             _acupointMap = (root.Acupoints ?? new List<AcupointNodeConfig>()).ToDictionary(x => x.Id, x => x);
+            _factionMap = (root.WorldFactions ?? new List<WorldFactionConfig>()).ToDictionary(x => x.Id, x => x);
+            _marketMap = (root.MarketListings ?? new List<MarketListingConfig>()).ToDictionary(x => x.Id, x => x);
+            _encounterMap = (root.EncounterEvents ?? new List<EncounterEventConfig>()).ToDictionary(x => x.Id, x => x);
         }
 
         public static RealmConfig GetRealm(RealmTier tier)
@@ -120,6 +138,363 @@ namespace SIGTool.Configs
             if (string.IsNullOrEmpty(id)) return null;
             AcupointNodeConfig cfg;
             return _acupointMap.TryGetValue(id, out cfg) ? cfg : null;
+        }
+
+        public static WorldFactionConfig GetWorldFaction(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            WorldFactionConfig cfg;
+            return _factionMap.TryGetValue(id, out cfg) ? cfg : null;
+        }
+
+        public static MarketListingConfig GetMarketListing(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            MarketListingConfig cfg;
+            return _marketMap.TryGetValue(id, out cfg) ? cfg : null;
+        }
+
+        public static EncounterEventConfig GetEncounterEvent(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+            EncounterEventConfig cfg;
+            return _encounterMap.TryGetValue(id, out cfg) ? cfg : null;
+        }
+
+        public static List<WorldFactionConfig> CreateDefaultWorldFactions()
+        {
+            return new List<WorldFactionConfig>
+            {
+                new WorldFactionConfig
+                {
+                    Id = "FAC_QINGYUN", NameCn = "青云剑派", ShortName = "青云派", AlignmentKey = "Righteous",
+                    SpecialtyTag = "庚金剑道", InitProsperity = 65, InitRelation = 10, DiplomacyStoneCost = 110,
+                    FriendlyBonusDesc = "交好:全宗攻+6% | 盟友:全宗攻+12%",
+                    Desc = "雄踞东洲太白剑峰的正道大宗，门下剑修辈出，常年求购玄铁精矿。"
+                },
+                new WorldFactionConfig
+                {
+                    Id = "FAC_BAICAO", NameCn = "百草丹谷", ShortName = "百草谷", AlignmentKey = "Righteous",
+                    SpecialtyTag = "灵植丹道", InitProsperity = 60, InitRelation = 15, DiplomacyStoneCost = 100,
+                    FriendlyBonusDesc = "交好:灵草+12%/成丹+4% | 盟友:灵草+22%/成丹+8%",
+                    Desc = "传承千年的杏林丹道世家，掌控南疆大片百草药园，兴盛时可平抑丹材价格。"
+                },
+                new WorldFactionConfig
+                {
+                    Id = "FAC_TIANJI", NameCn = "天机商盟", ShortName = "天机盟", AlignmentKey = "Neutral",
+                    SpecialtyTag = "九州商贸", InitProsperity = 70, InitRelation = 5, DiplomacyStoneCost = 130,
+                    FriendlyBonusDesc = "交好:坊市买-6%/卖+6% | 盟友:坊市买-12%/卖+12%",
+                    Desc = "遍布各大修仙坊市的中立商会，精通天机推演与灵材调拨，交好可显著降低坊市折损。"
+                },
+                new WorldFactionConfig
+                {
+                    Id = "FAC_BEIMING", NameCn = "北溟玄宫", ShortName = "北溟宫", AlignmentKey = "Righteous",
+                    SpecialtyTag = "聚灵阵道", InitProsperity = 58, InitRelation = 0, DiplomacyStoneCost = 120,
+                    FriendlyBonusDesc = "交好:全宗灵气+10% | 盟友:全宗灵气+20%",
+                    Desc = "隐居北溟寒海的阵道名门，擅长引动天地水脉潮汐滋养护山聚灵阵。"
+                },
+                new WorldFactionConfig
+                {
+                    Id = "FAC_XUEYING", NameCn = "血影魔宗", ShortName = "血影宗", AlignmentKey = "Demonic",
+                    SpecialtyTag = "魔渊煞器", InitProsperity = 52, InitRelation = -25, DiplomacyStoneCost = 140,
+                    FriendlyBonusDesc = "震慑/缓和(>=0):免除魔患滋扰，秘境妖丹掉率+12%",
+                    Desc = "盘踞九幽裂隙边缘的魔道巨擘，声势过盛时会搅动周边妖兽躁动，亦可通过演武威慑令其收敛。"
+                }
+            };
+        }
+
+        public static List<MarketListingConfig> CreateDefaultMarketListings()
+        {
+            return new List<MarketListingConfig>
+            {
+                new MarketListingConfig { Id = "MKT_RES_HERB", NameCn = "百草灵叶包 (灵草×25)", ShortName = "灵草×25", CategoryTag = "Herb", ResourceKey = "SpiritHerb", ResourceBatchQty = 25, BaseBuyStone = 55, BaseSellStone = 38, QuarterMaxStock = 16, Desc = "标准二十五株装炼丹灵草，受百草丰年与丹材荒岁行情影响极大。" },
+                new MarketListingConfig { Id = "MKT_RES_WOOD", NameCn = "铁桦灵木捆 (灵木×40)", ShortName = "灵木×40", CategoryTag = "Material", ResourceKey = "SpiritWood", ResourceBatchQty = 40, BaseBuyStone = 48, BaseSellStone = 32, QuarterMaxStock = 16, Desc = "宗门营造与法器制木刚需大宗资材。" },
+                new MarketListingConfig { Id = "MKT_RES_ORE", NameCn = "玄铁矿髓箱 (玄铁×40)", ShortName = "玄铁×40", CategoryTag = "Material", ResourceKey = "SpiritOre", ResourceBatchQty = 40, BaseBuyStone = 56, BaseSellStone = 38, QuarterMaxStock = 16, Desc = "百炼器坊与护山剑台核心精矿，各大剑宗常年竞购。" },
+                new MarketListingConfig { Id = "MKT_RES_FOOD", NameCn = "金穗灵谷担 (灵谷×50)", ShortName = "灵谷×50", CategoryTag = "Herb", ResourceKey = "SpiritFood", ResourceBatchQty = 50, BaseBuyStone = 36, BaseSellStone = 24, QuarterMaxStock = 20, Desc = "保障门人弟子月度口粮的基础灵米，口粮告急时可应急采购。" },
+                new MarketListingConfig { Id = "MKT_RES_CORE", NameCn = "秘境妖丹匣 (妖丹×3)", ShortName = "妖丹×3", CategoryTag = "Core", ResourceKey = "MonsterCore", ResourceBatchQty = 3, BaseBuyStone = 88, BaseSellStone = 62, QuarterMaxStock = 10, Desc = "炼制破境灵丹与祭炼词条阵宝的高阶稀缺灵材。" },
+                new MarketListingConfig { Id = "MKT_ITM_JUQI", NameCn = "聚气丹 (成丹×1)", ShortName = "聚气丹", CategoryTag = "Pill", ItemId = "ITEM_JUQI_PILL", ItemBatchQty = 1, BaseBuyStone = 28, BaseSellStone = 19, QuarterMaxStock = 15, Desc = "炼气修士常备吐纳灵丹，丹材涨价时抛售成丹利润丰厚。" },
+                new MarketListingConfig { Id = "MKT_ITM_HEAL1", NameCn = "回春丹 (成丹×1)", ShortName = "回春丹", CategoryTag = "Pill", ItemId = "ITEM_HEAL_PILL_1", ItemBatchQty = 1, BaseBuyStone = 22, BaseSellStone = 15, QuarterMaxStock = 18, Desc = "秘境历练常备疗伤灵丹，群妖躁动之年尤为抢手。" },
+                new MarketListingConfig { Id = "MKT_ITM_ZHUJI", NameCn = "筑基灵丹 (宝丹×1)", ShortName = "筑基丹", CategoryTag = "Pill", ItemId = "ITEM_ZHUJI_PILL", ItemBatchQty = 1, BaseBuyStone = 195, BaseSellStone = 135, QuarterMaxStock = 4, Desc = "冲击筑基大道的珍稀护脉宝丹，每季坊市流通数量极少。" },
+                new MarketListingConfig { Id = "MKT_ITM_JIUZHUAN", NameCn = "九转培元丹 (成丹×1)", ShortName = "培元丹", CategoryTag = "Pill", ItemId = "ITEM_JIUZHUAN_PILL", ItemBatchQty = 1, BaseBuyStone = 130, BaseSellStone = 90, QuarterMaxStock = 8, Desc = "中阶精进气海灵丹，可快速充盈掌门冲穴与破境所需真元。" },
+                new MarketListingConfig { Id = "MKT_ITM_JIEDAN", NameCn = "紫金结丹丸 (宝丹×1)", ShortName = "结丹丸", CategoryTag = "Pill", ItemId = "ITEM_JIEDAN_PILL", ItemBatchQty = 1, BaseBuyStone = 520, BaseSellStone = 360, QuarterMaxStock = 2, Desc = "凝结无瑕金丹的压轴奇珍，古迹现世年份溢价明显。" }
+            };
+        }
+
+        public static List<EncounterEventConfig> CreateDefaultEncounterEvents()
+        {
+            return new List<EncounterEventConfig>
+            {
+                // ==================== 大境界里程碑专属奇遇 ====================
+                new EncounterEventConfig
+                {
+                    Id = "ENC_REALM_FOUNDATION", TitleCn = "紫府初开·百宗观礼", TriggerTypeKey = "RealmMilestone", TriggerRealmKey = "Foundation",
+                    MinYear = 1, Weight = 0, ChainStep = 1, ChainTotal = 1,
+                    NarrativeDesc = "掌门成功铸就大道金基，山门瑞气千条！青云剑派与百草丹谷皆遣执事携贺礼登门观礼，欲探我宗后续立道方略。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "大开山门讲法论道", RiskTag = "稳妥·耗60灵石", PreviewGainText = "声望+45 / 青云与百草好感+18 / 全宗灵气+12%(12月)",
+                            CostSpiritStone = 60, BaseSuccessRate = 1.0, SuccessReputation = 45,
+                            TargetFactionId = "FAC_BAICAO", SuccessRelationDelta = 18,
+                            SuccessBuffName = "紫府论道余韵", SuccessBuffMonths = 12, SuccessTempAuraAdd = 0.12,
+                            SuccessOutcomeText = "讲道三日宾主尽欢，周边正道皆赞太虚云隐宗气象恢弘！"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "邀青云剑修切磋演武", RiskTag = "成率80%", PreviewGainText = "胜则全宗攻伐+10%(12月) / 灵石+160 / 妖丹+3",
+                            BaseSuccessRate = 0.80, SuccessStone = 160, SuccessCore = 3, SuccessReputation = 30,
+                            TargetFactionId = "FAC_QINGYUN", SuccessRelationDelta = 15,
+                            SuccessBuffName = "试剑锋芒", SuccessBuffMonths = 12, SuccessTempAtkAdd = 0.10,
+                            SuccessOutcomeText = "掌门以新成筑基真元略胜半招，青云执事抚掌叹服并赠剑道资材！",
+                            FailHpLossRatio = 0.20, FailOutcomeText = "剑气交锋稍逊半筹受了轻伤，但仍获观礼宾客敬重。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "低调谢客闭关敛息", RiskTag = "100%无耗", PreviewGainText = "掌门修为+520 / 培元丹×1",
+                            BaseSuccessRate = 1.0, SuccessQiGrant = 520, SuccessItemId = "ITEM_JIUZHUAN_PILL", SuccessItemQty = 1,
+                            SuccessOutcomeText = "谢绝繁文缛节潜心稳固筑基道果，气海修为精进一大截。"
+                        }
+                    }
+                },
+                new EncounterEventConfig
+                {
+                    Id = "ENC_REALM_GOLDENCORE", TitleCn = "金丹霞举·九霄星煞", TriggerTypeKey = "RealmMilestone", TriggerRealmKey = "GoldenCore",
+                    MinYear = 1, Weight = 0, ChainStep = 1, ChainTotal = 1,
+                    NarrativeDesc = "金丹成象引动九霄星辰罡煞垂落主峰！若借天威洗练本命阵宝或可一步登天，亦可以护山阵稳妥引导滋养灵脉。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "只身逆迎星煞淬炼重宝", RiskTag = "高险·成率72%", PreviewGainText = "赐3阶随机词条阵宝×1 / 掌门修为+2200 / 声望+80",
+                            BaseSuccessRate = 0.72, SuccessArtifactTier = 3, SuccessQiGrant = 2200, SuccessReputation = 80,
+                            SuccessOutcomeText = "漫天星煞尽数熔入炉鼎，一件流淌星辉的三阶镇派阵宝破空出世！",
+                            FailHpLossRatio = 0.35, FailOutcomeText = "星煞狂暴反噬震伤经脉，所幸金丹无恙，急需调息养伤。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "启护山阵引星辉入脉", RiskTag = "稳妥·耗120灵石", PreviewGainText = "全宗灵气+18%与攻+8%(18月) / 灵草+60 / 妖丹+5",
+                            CostSpiritStone = 120, BaseSuccessRate = 1.0, SuccessHerb = 60, SuccessCore = 5,
+                            SuccessBuffName = "星辉灌脉", SuccessBuffMonths = 18, SuccessTempAuraAdd = 0.18, SuccessTempAtkAdd = 0.08,
+                            SuccessOutcomeText = "星辉化作涓涓甘霖浸润全宗二十四处灵脉，未来年半吐纳一日千里！"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "拓印金丹道纹赠天机盟", RiskTag = "100%稳赚", PreviewGainText = "灵石+480 / 天机商盟好感+25",
+                            BaseSuccessRate = 1.0, SuccessStone = 480, TargetFactionId = "FAC_TIANJI", SuccessRelationDelta = 25,
+                            SuccessOutcomeText = "天机商盟奉上厚礼收购观摩拓本，本宗在九州商路地位大涨。"
+                        }
+                    }
+                },
+                new EncounterEventConfig
+                {
+                    Id = "ENC_REALM_NASCENT", TitleCn = "元婴神游·太虚遗蜕", TriggerTypeKey = "RealmMilestone", TriggerRealmKey = "NascentSoul",
+                    MinYear = 1, Weight = 0, ChainStep = 1, ChainTotal = 1,
+                    NarrativeDesc = "元婴初成神游太虚裂隙，竟感应到一具上古化神大能坐化遗蜕，身畔悬浮半卷仙诀与古镜虚影。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "强施神识夺取古仙至宝", RiskTag = "极险·成率68%", PreviewGainText = "赐4阶仙品潜力阵宝×1 / 灵石+900",
+                            BaseSuccessRate = 0.68, SuccessArtifactTier = 4, SuccessStone = 900, SuccessReputation = 120,
+                            SuccessOutcomeText = "神识破开万载残禁，成功携回上古洞天四阶至宝！",
+                            FailHpLossRatio = 0.40, FailOutcomeText = "残存禁制凌厉反击震退元婴，虽未夺宝亦记下几分大道玄机。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "恭敬稽首参悟坐化道韵", RiskTag = "100%稳妥", PreviewGainText = "掌门修为+8500 / 凝婴丹×1 / 灵气+22%(24月)",
+                            BaseSuccessRate = 1.0, SuccessQiGrant = 8500, SuccessItemId = "ITEM_NINGYING_PILL", SuccessItemQty = 1,
+                            SuccessBuffName = "古仙道韵", SuccessBuffMonths = 24, SuccessTempAuraAdd = 0.22,
+                            SuccessOutcomeText = "遗蜕化作清风消散，留下一枚古丹与浩瀚道韵萦绕主峰！"
+                        }
+                    }
+                },
+
+                // ==================== 连续多阶段奇遇链 A（共 3 环：寒门散修 -> 古洞舆图 -> 云梦丹室） ====================
+                new EncounterEventConfig
+                {
+                    Id = "ENC_CHAIN_HERMIT_1", TitleCn = "寒门散修叩门求药", TriggerTypeKey = "RandomMonthly",
+                    MinYear = 1, Weight = 14.0, ChainStep = 1, ChainTotal = 3,
+                    NarrativeDesc = "一名身负妖毒的云游散修跌撞至山门石阶，怀揣半卷模糊兽皮残图，恳求赐予灵草救命。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "赐百草灵叶倾力救治", RiskTag = "善缘·耗22灵草", PreviewGainText = "声望+20 / 结下因果(4个月后触发后续机缘)",
+                            CostHerb = 22, BaseSuccessRate = 1.0, SuccessReputation = 20,
+                            NextChainEventId = "ENC_CHAIN_HERMIT_2", NextChainDelayMonths = 4,
+                            SuccessOutcomeText = "散修服药拔除妖毒，叩首立誓伤愈查明残图来历后必登门厚报！"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "出资买下兽皮残卷参详", RiskTag = "稳妥·耗55灵石", PreviewGainText = "掌门修为+240 / 玄铁+30",
+                            CostSpiritStone = 55, BaseSuccessRate = 1.0, SuccessQiGrant = 240, SuccessOre = 30,
+                            SuccessOutcomeText = "散修得灵石自行下山购药，你从残卷边角参悟出一套吐纳小窍门。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "严守门规婉言遣离", RiskTag = "无消耗", PreviewGainText = "灵石+25(山门巡查拾遗)",
+                            BaseSuccessRate = 1.0, SuccessStone = 25,
+                            SuccessOutcomeText = "执事弟子礼送散修离去，山门清净无波。"
+                        }
+                    }
+                },
+                new EncounterEventConfig
+                {
+                    Id = "ENC_CHAIN_HERMIT_2", TitleCn = "故人携古洞舆图来报", TriggerTypeKey = "ChainFollowup",
+                    MinYear = 1, Weight = 0, ChainStep = 2, ChainTotal = 3,
+                    NarrativeDesc = "数月前救治的散修气色大好重返山门，查明那兽皮乃【云梦丹师古洞】外围禁制图，特邀本宗共探遗泽！",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "筹备破禁灵符亲探古洞", RiskTag = "成率82%·耗75灵石", PreviewGainText = "灵草+45 / 妖丹+3 / 开启第3环核心丹室",
+                            CostSpiritStone = 75, BaseSuccessRate = 0.82, SuccessHerb = 45, SuccessCore = 3,
+                            NextChainEventId = "ENC_CHAIN_HERMIT_3", NextChainDelayMonths = 4,
+                            SuccessOutcomeText = "顺利破开外围迷雾阵收获颇丰，更发现通往地底核心丹室的封印石门！",
+                            FailHpLossRatio = 0.18, FailOutcomeText = "古洞外围剑气残阵激发受阻，只得暂退回山重整旗鼓。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "将舆图转售天机商盟变现", RiskTag = "100%稳赚", PreviewGainText = "灵石+240 / 天机商盟好感+15",
+                            BaseSuccessRate = 1.0, SuccessStone = 240, TargetFactionId = "FAC_TIANJI", SuccessRelationDelta = 15,
+                            SuccessOutcomeText = "天机商盟高价收下古洞坐标，本宗兵不血刃大获灵石充盈库藏。"
+                        }
+                    }
+                },
+                new EncounterEventConfig
+                {
+                    Id = "ENC_CHAIN_HERMIT_3", TitleCn = "云梦秘藏·地心丹室", TriggerTypeKey = "ChainFollowup",
+                    MinYear = 1, Weight = 0, ChainStep = 3, ChainTotal = 3,
+                    NarrativeDesc = "云梦古洞地心石门缓缓开启，古丹炉内尚有丹香袅袅，石台上更镇着一件灵光流转的护阵古宝，然守护石傀已然苏醒！",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "力战石傀尽取古洞核心秘藏", RiskTag = "成率75%", PreviewGainText = "赐2阶词条阵宝×1 / 筑基丹×1 / 灵石+220",
+                            BaseSuccessRate = 0.75, SuccessArtifactTier = 2, SuccessItemId = "ITEM_ZHUJI_PILL", SuccessItemQty = 1, SuccessStone = 220,
+                            SuccessOutcomeText = "掌门剑气纵横击碎石傀，将炉中筑基宝丹与石台古宝尽数收入囊中！",
+                            FailHpLossRatio = 0.28, FailOutcomeText = "石傀坚逾精金，激战后仅抢出少许丹灰便被迫撤离古洞。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "避开石傀收取偏殿药圃心得", RiskTag = "100%稳妥", PreviewGainText = "灵草+70 / 掌门修为+680 / 灵气+12%(10月)",
+                            BaseSuccessRate = 1.0, SuccessHerb = 70, SuccessQiGrant = 680,
+                            SuccessBuffName = "云梦丹诀启迪", SuccessBuffMonths = 10, SuccessTempAuraAdd = 0.12,
+                            SuccessOutcomeText = "稳妥采尽万年药圃与石壁丹诀，满载而归！"
+                        }
+                    }
+                },
+
+                // ==================== 连续多阶段奇遇链 B（共 2 环：地肺异火 -> 火髓成晶） ====================
+                new EncounterEventConfig
+                {
+                    Id = "ENC_CHAIN_VEIN_1", TitleCn = "后山地肺异火暗涌", TriggerTypeKey = "RandomMonthly",
+                    MinYear = 1, Weight = 12.0, ChainStep = 1, ChainTotal = 2,
+                    NarrativeDesc = "矿脉执事急报：后山灵矿深处忽有赤红地火涌动，矿温骤升，若妥善引流或能孕育罕见火髓灵晶。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "耗材布设锁火导脉阵", RiskTag = "投资·耗65灵石", PreviewGainText = "玄铁+35 / 3个月后孕育第2环【地肺火髓】",
+                            CostSpiritStone = 65, BaseSuccessRate = 1.0, SuccessOre = 35,
+                            NextChainEventId = "ENC_CHAIN_VEIN_2", NextChainDelayMonths = 3,
+                            SuccessOutcomeText = "锁火阵稳稳束缚地肺炎流，矿窟深处隐有赤晶凝结之兆！"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "引北溟寒泉封堵火脉", RiskTag = "100%无耗", PreviewGainText = "玄铁+50 / 灵石+70 / 北溟玄宫好感+10",
+                            BaseSuccessRate = 1.0, SuccessOre = 50, SuccessStone = 70,
+                            TargetFactionId = "FAC_BEIMING", SuccessRelationDelta = 10,
+                            SuccessOutcomeText = "水火相激化作大块百炼玄铁，后山隐患彻底平息。"
+                        }
+                    }
+                },
+                new EncounterEventConfig
+                {
+                    Id = "ENC_CHAIN_VEIN_2", TitleCn = "地肺火髓凝结成晶", TriggerTypeKey = "ChainFollowup",
+                    MinYear = 1, Weight = 0, ChainStep = 2, ChainTotal = 2,
+                    NarrativeDesc = "历经三月地脉温养，锁火大阵中央已凝成一团炽烈夺目的【赤阳地火髓】，既可吞纳淬体，亦可入炉铸宝！",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "掌门入阵吞纳火髓洗髓", RiskTag = "成率76%", PreviewGainText = "掌门修为+580 / 全宗攻伐+12%(12月)",
+                            BaseSuccessRate = 0.76, SuccessQiGrant = 580,
+                            SuccessBuffName = "赤阳真火淬体", SuccessBuffMonths = 12, SuccessTempAtkAdd = 0.12,
+                            SuccessOutcomeText = "地火真精贯入四肢百骸，掌门真元暴涨且剑气附带炽烈锋芒！",
+                            FailHpLossRatio = 0.25, FailOutcomeText = "火髓燥烈难驯灼伤经络，幸得护体真元及时宣泄余热。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "送入百炼器坊铸造阵宝", RiskTag = "100%必成", PreviewGainText = "赐2阶词条阵宝×1 / 妖丹+3",
+                            BaseSuccessRate = 1.0, SuccessArtifactTier = 2, SuccessCore = 3,
+                            SuccessOutcomeText = "器坊炉火冲霄三日不绝，顺利铸成一件火灵充沛的二阶词条法宝！"
+                        }
+                    }
+                },
+
+                // ==================== 常驻随机演化奇遇 ====================
+                new EncounterEventConfig
+                {
+                    Id = "ENC_RND_MERCHANT", TitleCn = "天机行商秘匣奇珍", TriggerTypeKey = "RandomMonthly",
+                    MinYear = 1, Weight = 15.0, ChainStep = 1, ChainTotal = 1,
+                    NarrativeDesc = "天机商盟一支驼铃灵舟途经山门避风，管事呈上一只封印斑驳的古修石匣与数批急售丹药。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "出资盲开古修封印石匣", RiskTag = "博弈·耗110灵石·成率74%", PreviewGainText = "赐2阶词条阵宝×1 / 培元丹×1",
+                            CostSpiritStone = 110, BaseSuccessRate = 0.74, SuccessArtifactTier = 2, SuccessItemId = "ITEM_JIUZHUAN_PILL", SuccessItemQty = 1,
+                            TargetFactionId = "FAC_TIANJI", SuccessRelationDelta = 10,
+                            SuccessOutcomeText = "石匣禁制应声而解，内藏一件完好古宝与一瓶九转培元丹，大赚特赚！",
+                            FailHpLossRatio = 0.0, FailOutcomeText = "石匣开启后灵气早已流失大半，仅余几块寻常碎玉。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "以富余灵草置换急需灵石", RiskTag = "稳妥·耗30灵草", PreviewGainText = "灵石+115 / 聚气丹×2",
+                            CostHerb = 30, BaseSuccessRate = 1.0, SuccessStone = 115, SuccessItemId = "ITEM_JUQI_PILL", SuccessItemQty = 2,
+                            SuccessOutcomeText = "行商正缺百草补给，爽快奉上高额灵石与两枚聚气丹。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "灵茶款待探听九州商情", RiskTag = "100%无耗", PreviewGainText = "天机商盟好感+12 / 声望+15",
+                            BaseSuccessRate = 1.0, SuccessReputation = 15, TargetFactionId = "FAC_TIANJI", SuccessRelationDelta = 12,
+                            SuccessOutcomeText = "管事感念礼遇，临别详告近期各大宗门资材缺口动向。"
+                        }
+                    }
+                },
+                new EncounterEventConfig
+                {
+                    Id = "ENC_RND_SECT_DISPUTE", TitleCn = "边界伴生灵矿争端", TriggerTypeKey = "RandomMonthly",
+                    MinYear = 2, Weight = 13.0, ChainStep = 1, ChainTotal = 1,
+                    NarrativeDesc = "苍梧山脉交界新现一处露天伴生灵矿，青云剑派巡山弟子正与血影魔宗斥候拔剑对峙，形势一触即发。",
+                    Options = new List<EncounterOptionConfig>
+                    {
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "率剑卫驰援青云震慑魔修", RiskTag = "成率78%", PreviewGainText = "灵石+150 / 玄铁+55 / 青云好感+18 / 声望+28",
+                            BaseSuccessRate = 0.78, SuccessStone = 150, SuccessOre = 55, SuccessReputation = 28,
+                            TargetFactionId = "FAC_QINGYUN", SuccessRelationDelta = 18,
+                            SuccessOutcomeText = "两宗剑气合璧惊退魔宗斥候，青云长老分予本宗半数伴生灵矿！",
+                            FailHpLossRatio = 0.22, FailOutcomeText = "魔修埋伏阴毒煞雷，掌门护住门人全身而退但略受震荡。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "遣精锐绕后暗采核心妖晶", RiskTag = "奇袭·成率70%", PreviewGainText = "灵石+190 / 妖丹+4",
+                            BaseSuccessRate = 0.70, SuccessStone = 190, SuccessCore = 4,
+                            SuccessOutcomeText = "趁两派僵持之际悄然掘走矿心伴生妖晶，神不知鬼不觉！",
+                            FailHpLossRatio = 0.16, FailOutcomeText = "矿脉余波震塌甬道，未能深入矿心便匆匆撤回。"
+                        },
+                        new EncounterOptionConfig
+                        {
+                            OptionTitle = "加固护山阵严守中立边界", RiskTag = "100%稳妥", PreviewGainText = "掌门修为+320 / 声望+12",
+                            BaseSuccessRate = 1.0, SuccessQiGrant = 320, SuccessReputation = 12,
+                            SuccessOutcomeText = "山门清静无虞，趁外宗纷争潜心吐纳精进修为。"
+                        }
+                    }
+                }
+            };
         }
 
         private static List<AcupointNodeConfig> CreateDefaultAcupoints()
@@ -287,6 +662,9 @@ namespace SIGTool.Configs
 
             cfg.ArtifactTemplates = CreateDefaultArtifactTemplates();
             cfg.Acupoints = CreateDefaultAcupoints();
+            cfg.WorldFactions = CreateDefaultWorldFactions();
+            cfg.MarketListings = CreateDefaultMarketListings();
+            cfg.EncounterEvents = CreateDefaultEncounterEvents();
             return cfg;
         }
     }

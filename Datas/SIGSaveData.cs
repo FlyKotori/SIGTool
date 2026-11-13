@@ -21,6 +21,7 @@ namespace SIGTool.Datas
         public List<CharacterData> Disciples { get; set; } = new List<CharacterData>();
         public SectManageData Sect { get; set; } = new SectManageData();
         public CombatStateData Combat { get; set; } = new CombatStateData();
+        public WorldEvolutionStateData World { get; set; } = new WorldEvolutionStateData();
 
         public string GetImmortalDateText()
         {

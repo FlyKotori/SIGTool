@@ -30,6 +30,7 @@ namespace SIGTool.Forms
         private UcCombatExplorePanel _ucCombatExplore;
         private UcArtifactArrayPanel _ucArtifactArray;
         private UcMeridianPanel _ucMeridian;
+        private UcWorldEvolutionPanel _ucWorldEvolution;
 
         private UcLogConsole _ucLogConsole;
         private UcStatusFeedbackStrip _statusStrip;
@@ -113,17 +114,18 @@ namespace SIGTool.Forms
             {
                 Dock = DockStyle.Fill,
                 Font = UiStyleHelper.BoldFont,
-                Padding = new Point(12, 5),
+                Padding = new Point(8, 5),
                 DrawMode = TabDrawMode.OwnerDrawFixed
             };
             _tabMain.DrawItem += OnTabMainDrawItem;
 
             var tab1 = new TabPage("1. 修仙吐纳 (掌门)");
             var tab2 = new TabPage("2. 宗门营造 (灵脉)");
-            var tab3 = new TabPage("3. 门人百艺 (排班/丹器)");
-            var tab4 = new TabPage("4. 秘境斗法 (历练/防卫)");
-            var tab5 = new TabPage("5. 法宝大阵 (九宫/词条)");
-            var tab6 = new TabPage("6. 经脉周天 (奇经/冲穴)");
+            var tab3 = new TabPage("3. 门人百艺 (丹器)");
+            var tab4 = new TabPage("4. 秘境斗法 (历练)");
+            var tab5 = new TabPage("5. 法宝大阵 (九宫)");
+            var tab6 = new TabPage("6. 经脉周天 (奇经)");
+            var tab7 = new TabPage("7. 天下奇遇 (坊市)");
 
             _ucCultivation = new UcCultivationPanel(_engine, OpenOrFocusCharSheetWindow);
             _ucSectBuild = new UcSectBuildPanel(_engine);
@@ -131,6 +133,7 @@ namespace SIGTool.Forms
             _ucCombatExplore = new UcCombatExplorePanel(_engine, OpenOrFocusCombatWindow);
             _ucArtifactArray = new UcArtifactArrayPanel(_engine);
             _ucMeridian = new UcMeridianPanel(_engine);
+            _ucWorldEvolution = new UcWorldEvolutionPanel(_engine);
 
             tab1.Controls.Add(_ucCultivation);
             tab2.Controls.Add(_ucSectBuild);
@@ -138,9 +141,10 @@ namespace SIGTool.Forms
             tab4.Controls.Add(_ucCombatExplore);
             tab5.Controls.Add(_ucArtifactArray);
             tab6.Controls.Add(_ucMeridian);
+            tab7.Controls.Add(_ucWorldEvolution);
 
-            _tabMain.TabPages.AddRange(new TabPage[] { tab1, tab2, tab3, tab4, tab5, tab6 });
-            UiStyleHelper.SetToolTip(_tabMain, "快捷键切换页签：F1 修仙吐纳 / F2 宗门营造 / F3 门人百艺 / F4 秘境斗法 / F5 法宝大阵 / F6 经脉周天");
+            _tabMain.TabPages.AddRange(new TabPage[] { tab1, tab2, tab3, tab4, tab5, tab6, tab7 });
+            UiStyleHelper.SetToolTip(_tabMain, "快捷键切换页签：F1 修仙吐纳 / F2 宗门营造 / F3 门人百艺 / F4 秘境斗法 / F5 法宝大阵 / F6 经脉周天 / F7 天下奇遇");
             _tabMain.SelectedIndexChanged += (s, e) =>
             {
                 UpdateStatusShortcutHint();
@@ -198,6 +202,10 @@ namespace SIGTool.Forms
                 case AlertTargetKind.ReadyAcupoint:
                     _ucMeridian.FocusAcupoint(req.EntityId);
                     UiFeedbackService.PushInfo("已定位至可贯通穴位（双击或按 Enter 即可催动真元冲穴）。");
+                    break;
+                case AlertTargetKind.PendingEncounter:
+                    _ucWorldEvolution.FocusPendingEncounter();
+                    UiFeedbackService.PushInfo("已切至天机奇遇待决台（点击选项或按 Alt+1~3 即可定夺）。");
                     break;
             }
             RefreshActiveViews();
@@ -496,7 +504,7 @@ namespace SIGTool.Forms
 
             string targetTitle = s.UseMinimalWindowTitle
                 ? "SIGTool"
-                : "SIGTool v0.8 - 挂机修仙 · 宗门营造 · 秘境斗法 · 奇经周天 (.NET Framework 4.7.2)";
+                : "SIGTool v0.9 - 挂机修仙 · 宗门营造 · 奇经周天 · 九州奇遇 (.NET Framework 4.7.2)";
             if (this.Text != targetTitle) this.Text = targetTitle;
 
             if (_headerBar != null)
@@ -586,6 +594,9 @@ namespace SIGTool.Forms
                 case 5:
                     _ucMeridian.RefreshView();
                     break;
+                case 6:
+                    _ucWorldEvolution.RefreshView();
+                    break;
             }
 
             if (_combatPopupForm != null && !_combatPopupForm.IsDisposed && _combatPopupForm.Visible)
@@ -665,25 +676,28 @@ namespace SIGTool.Forms
             switch (_tabMain.SelectedIndex)
             {
                 case 0:
-                    tabHint = "F1-F6:切页 | 1-3:服丹 P:破境 | ←↑↓→/Enter:选功法 | Space:暂停 B:储物 C:属性 F12:测试台";
+                    tabHint = "F1-F7:切页 | 1-3:服丹 P:破境 | ←↑↓→/Enter:选功法 | Space:暂停 B:储物 C:属性 F12:测试台";
                     break;
                 case 1:
-                    tabHint = "F1-F6:切页 | ←↑↓→/Enter:选建筑(Ctrl+方向键:选灵脉) | Space:暂停 B:储物 F12:测试台";
+                    tabHint = "F1-F7:切页 | ←↑↓→/Enter:选建筑(Ctrl+方向键:选灵脉) | Space:暂停 B:储物 F12:测试台";
                     break;
                 case 2:
-                    tabHint = "F1-F6:切页 | R:招募 M:百艺总谱 | Space:暂停 1-3:服丹 B:储物 C:属性 F12:测试台";
+                    tabHint = "F1-F7:切页 | R:招募 M:百艺总谱 | Space:暂停 1-3:服丹 B:储物 C:属性 F12:测试台";
                     break;
                 case 3:
-                    tabHint = "F1-F6:切页 | Space:出征/撤退 1-3:战丹 Q/E:神通 | ←↑↓→/Enter:选秘境 | V:战报 F12:测试台";
+                    tabHint = "F1-F7:切页 | Space:出征/撤退 1-3:战丹 Q/E:神通 | ←↑↓→/Enter:选秘境 | V:战报 F12:测试台";
                     break;
                 case 4:
-                    tabHint = "F1-F6:切页 | ←↑↓→/Enter:选法宝(Ctrl+方向键:选阵眼) | Space:暂停 B:储物 F12:测试台";
+                    tabHint = "F1-F7:切页 | ←↑↓→/Enter:选法宝(Ctrl+方向键:选阵眼) | Space:暂停 B:储物 F12:测试台";
                     break;
                 case 5:
-                    tabHint = "F1-F6:切页 | ←↑↓→/Enter:选穴冲脉 | 1-3:服丹充气 | Space:暂停 C:属性 F12:测试台";
+                    tabHint = "F1-F7:切页 | ←↑↓→/Enter:选穴冲脉 | 1-3:服丹充气 | Space:暂停 C:属性 F12:测试台";
+                    break;
+                case 6:
+                    tabHint = "F1-F7:切页 | Alt+1~3:奇遇抉择 | ←↑↓→/Enter:坊市采购(Del:抛售) | Space:暂停 F12:测试台";
                     break;
                 default:
-                    tabHint = "F1-F6:切页 | 1-3:服丹 | Space:暂停 | B:储物 C:属性 F12:测试台";
+                    tabHint = "F1-F7:切页 | 1-3:服丹 | Space:暂停 | B:储物 C:属性 F12:测试台";
                     break;
             }
             _statusStrip.SetRightHint(tabHint);
@@ -700,7 +714,16 @@ namespace SIGTool.Forms
                 OpenOrFocusDevConsole();
                 return true;
             }
-            if (keyData >= Keys.F1 && keyData <= Keys.F6)
+            if (_tabMain.SelectedIndex == 6 && (keyData == (Keys.Alt | Keys.D1) || keyData == (Keys.Alt | Keys.D2) || keyData == (Keys.Alt | Keys.D3)))
+            {
+                int optIdx = (int)((keyData & Keys.KeyCode) - Keys.D1);
+                if (_ucWorldEvolution.TriggerEncounterOptionByIndex(optIdx)) return true;
+            }
+            if (_tabMain.SelectedIndex == 6 && !UiStyleHelper.IsTextInputFocused(this.ActiveControl) && (keyData == Keys.Delete || keyData == Keys.Back))
+            {
+                if (_ucWorldEvolution.HandleKeyboardNavigation(keyData)) return true;
+            }
+            if (keyData >= Keys.F1 && keyData <= Keys.F7)
             {
                 int targetTab = (int)(keyData - Keys.F1);
                 if (targetTab >= 0 && targetTab < _tabMain.TabPages.Count)
@@ -886,6 +909,7 @@ namespace SIGTool.Forms
                         case 3: handled = _ucCombatExplore.HandleKeyboardNavigation(keyData); break;
                         case 4: handled = _ucArtifactArray.HandleKeyboardNavigation(keyData); break;
                         case 5: handled = _ucMeridian.HandleKeyboardNavigation(keyData); break;
+                        case 6: handled = _ucWorldEvolution.HandleKeyboardNavigation(keyData); break;
                     }
                     if (handled) return true;
                 }

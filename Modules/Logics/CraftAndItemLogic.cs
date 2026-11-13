@@ -71,7 +71,8 @@ namespace SIGTool.Modules.Logics
                     helperSkillSum = save.Disciples.Where(d => d.AssignedJob == DiscipleJob.Forge).Sum(d => d.ForgeSkillLv);
             }
 
-            double rate = rcp.BaseSuccessRate + (bldLv - rcp.MinBuildingLevel) * 0.04 + (masteryLv - 1) * 0.03 + helperSkillSum * 0.025;
+            double worldAlchBonus = (rcp.RequiredBuildingId == "BLD_ALCHEMY") ? WorldEvolutionLogic.GetAlchemySuccessRateBonus(save) : 0.0;
+            double rate = rcp.BaseSuccessRate + (bldLv - rcp.MinBuildingLevel) * 0.04 + (masteryLv - 1) * 0.03 + helperSkillSum * 0.025 + worldAlchBonus;
             return Math.Min(0.99, Math.Max(0.25, rate));
         }
 

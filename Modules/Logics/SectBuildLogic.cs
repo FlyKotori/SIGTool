@@ -93,7 +93,7 @@ namespace SIGTool.Modules.Logics
             }
 
             var fm = ArtifactFormationLogic.ComputeFormationSummary(sect);
-            bonus += fm.QiRatePctAdd;
+            bonus += fm.QiRatePctAdd + sect.WorldAuraBonusCache;
             return bonus;
         }
 
@@ -193,14 +193,14 @@ namespace SIGTool.Modules.Logics
                 if (!string.IsNullOrEmpty(cfg.ProduceResourceKey) &&
                     Enum.TryParse(cfg.ProduceResourceKey, true, out primaryRes))
                 {
-                    rates[primaryRes] += cfg.BaseOutputPerSec * lvMult * slotMult * workerBonus;
+                    rates[primaryRes] += cfg.BaseOutputPerSec * lvMult * slotMult * workerBonus * WorldEvolutionLogic.GetWorldResourceMultiplier(save, primaryRes);
                 }
 
                 ResourceType secRes;
                 if (!string.IsNullOrEmpty(cfg.SecondaryResourceKey) &&
                     Enum.TryParse(cfg.SecondaryResourceKey, true, out secRes))
                 {
-                    rates[secRes] += cfg.SecondaryOutputPerSec * lvMult * slotMult * workerBonus;
+                    rates[secRes] += cfg.SecondaryOutputPerSec * lvMult * slotMult * workerBonus * WorldEvolutionLogic.GetWorldResourceMultiplier(save, secRes);
                 }
             }
 
