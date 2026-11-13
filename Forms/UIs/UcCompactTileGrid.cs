@@ -27,6 +27,9 @@ namespace SIGTool.Forms.UIs
         private string _topText = "";
         private string _bottomText = "";
 
+        public string TopText { get { return _topText; } }
+        public string BottomText { get { return _bottomText; } }
+
         public NonInteractiveStackedCellsPanel()
         {
             this.DoubleBuffered = true;
@@ -135,6 +138,53 @@ namespace SIGTool.Forms.UIs
             this.Controls.Add(_btnMain);
             this.Controls.Add(_pnlRightStack);
             ApplyTheme();
+        }
+
+        public void SetDimensions(int tileWidth, int tileHeight, int rightStackWidth)
+        {
+            int rw = Math.Max(38, rightStackWidth);
+            if (_pnlRightStack.Width != rw) _pnlRightStack.Width = rw;
+            if (this.Width != tileWidth || this.Height != tileHeight)
+            {
+                this.Size = new Size(tileWidth, tileHeight);
+            }
+        }
+
+        public bool HasTextOverflow(out string reason)
+        {
+            reason = "";
+            int pad = this.Padding.Horizontal;
+            int rightAvail = _pnlRightStack.Width - 4;
+            int leftAvail = Math.Max(10, this.Width - _pnlRightStack.Width - pad - 4);
+
+            if (!string.IsNullOrEmpty(_btnMain.Text))
+            {
+                int titleW = TextRenderer.MeasureText(_btnMain.Text, _btnMain.Font, new Size(2000, 40), TextFormatFlags.NoPrefix).Width;
+                if (titleW > leftAvail + 2)
+                {
+                    reason = string.Format("TileTitle '{0}' need={1} > avail={2}", _btnMain.Text, titleW, leftAvail);
+                    return true;
+                }
+            }
+            if (!string.IsNullOrEmpty(_pnlRightStack.TopText))
+            {
+                int topW = TextRenderer.MeasureText(_pnlRightStack.TopText, UiStyleHelper.SmallMonoBold, new Size(2000, 30), TextFormatFlags.NoPrefix).Width;
+                if (topW > rightAvail + 2)
+                {
+                    reason = string.Format("TileTop '{0}' need={1} > avail={2}", _pnlRightStack.TopText, topW, rightAvail);
+                    return true;
+                }
+            }
+            if (!string.IsNullOrEmpty(_pnlRightStack.BottomText))
+            {
+                int botW = TextRenderer.MeasureText(_pnlRightStack.BottomText, UiStyleHelper.SmallMonoReg, new Size(2000, 30), TextFormatFlags.NoPrefix).Width;
+                if (botW > rightAvail + 2)
+                {
+                    reason = string.Format("TileBot '{0}' need={1} > avail={2}", _pnlRightStack.BottomText, botW, rightAvail);
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void BindData(CompactTileData data, bool selected)
@@ -330,9 +380,32 @@ namespace SIGTool.Forms.UIs
                 rem.Dispose();
             }
 
+            int maxRightNeed = 42;
+            int maxLeftNeed = 82;
+            for (int i = 0; i < items.Count; i++)
+            {
+                var it = items[i];
+                string dispTitle = it.IsActiveEquipped ? ("■ " + (it.ShortTitle ?? "")) : (it.ShortTitle ?? "");
+                int tW = TextRenderer.MeasureText(dispTitle, UiStyleHelper.BoldFont, new Size(2000, 40), TextFormatFlags.NoPrefix).Width + 16;
+                if (tW > maxLeftNeed) maxLeftNeed = tW;
+
+                if (!string.IsNullOrEmpty(it.SubValueTop))
+                {
+                    int topW = TextRenderer.MeasureText(it.SubValueTop, UiStyleHelper.SmallMonoBold, new Size(2000, 30), TextFormatFlags.NoPrefix).Width + 10;
+                    if (topW > maxRightNeed) maxRightNeed = topW;
+                }
+                if (!string.IsNullOrEmpty(it.SubValueBottom))
+                {
+                    int botW = TextRenderer.MeasureText(it.SubValueBottom, UiStyleHelper.SmallMonoReg, new Size(2000, 30), TextFormatFlags.NoPrefix).Width + 10;
+                    if (botW > maxRightNeed) maxRightNeed = botW;
+                }
+            }
+            int effectiveTileW = Math.Max(_tileWidth, maxLeftNeed + maxRightNeed + 6);
+
             for (int i = 0; i < items.Count; i++)
             {
                 var d = items[i];
+                _tileControls[i].SetDimensions(effectiveTileW, _tileHeight, maxRightNeed);
                 _tileControls[i].BindData(d, d.Id == _selectedId);
             }
 

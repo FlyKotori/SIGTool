@@ -62,7 +62,7 @@ namespace SIGTool.Forms.UIs
 
         private void BuildUI()
         {
-            var splitMain = UiStyleHelper.CreateProportionalSplit(Orientation.Vertical, 0.43, 390, 420, "Tab1.Main");
+            var splitMain = UiStyleHelper.CreateProportionalSplit(Orientation.Vertical, 0.45, 420, 420, "Tab1.Main");
 
             var grpLeft = new GroupBox
             {
@@ -122,7 +122,8 @@ namespace SIGTool.Forms.UIs
             _lblCoreStatsLine = new Label
             {
                 Dock = DockStyle.Fill,
-                Font = UiStyleHelper.MonoFont,
+                Font = UiStyleHelper.SmallMonoReg,
+                AutoEllipsis = true,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Text = "战力: 0 | 攻: 0 | 防: 0 | 聚灵: +0%"
             };
@@ -148,7 +149,7 @@ namespace SIGTool.Forms.UIs
             {
                 AutoSize = true,
                 Font = UiStyleHelper.SmallFont,
-                Margin = new Padding(6, 6, 8, 0),
+                Margin = new Padding(4, 6, 4, 0),
                 Text = "突破准备中..."
             };
 
@@ -609,7 +610,7 @@ namespace SIGTool.Forms.UIs
                     string.Format("[▲寿元剩{0,5:F1}年]", Math.Max(0, ld.MaxLifespanYears - ld.AgeYears)));
             }
 
-            string statsLine = string.Format("战力:{0:F0} | 攻:{1:F1} | 防:{2:F1} | 吸血:{3:P1} | 宗门灵气:+{4:P0}",
+            string statsLine = string.Format("战力:{0:F0} | 攻:{1:F1} | 防:{2:F1} | 吸血:{3:P1} | 聚灵:+{4:P0}",
                 ld.EstimateCombatPower(), ld.BattleStats.Attack, ld.BattleStats.Defense, ld.BattleStats.LifestealRate, sectAura);
             UiStyleHelper.SetTextIfChanged(_lblCoreStatsLine, statsLine);
 
@@ -629,13 +630,13 @@ namespace SIGTool.Forms.UIs
 
             if (ld.SubStage < rCfg.MaxSubStage)
             {
-                UiStyleHelper.SetTextIfChanged(_lblBreakthroughRate, canBreak ? "★气海已满 (小境界100%)" : "小境界积蓄中 (100%)");
+                UiStyleHelper.SetTextIfChanged(_lblBreakthroughRate, canBreak ? "★可破境(100%)" : "积蓄中(100%)");
             }
             else
             {
                 var pCfg = SIGConfigTable.GetItem(bonusPillId);
-                UiStyleHelper.SetTextIfChanged(_lblBreakthroughRate, string.Format("大境界瓶颈 · 成率 {0:P0}{1}",
-                    winRate, pCfg != null ? string.Format(" (含{0})", pCfg.GetShortLabel()) : ""));
+                UiStyleHelper.SetTextIfChanged(_lblBreakthroughRate, string.Format("瓶颈{0:P0}{1}",
+                    winRate, pCfg != null ? ("+" + pCfg.GetShortLabel()) : ""));
             }
 
             var wCfg = SIGConfigTable.GetItem(ld.EquippedWeaponId);

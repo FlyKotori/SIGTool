@@ -55,8 +55,8 @@ namespace SIGTool.Forms
             this.DoubleBuffered = true;
             this.KeyPreview = true;
             this.Text = "开发者数值平衡测试台 (EXT-04)";
-            this.Size = new Size(980, 620);
-            this.MinimumSize = new Size(840, 500);
+            this.Size = new Size(1160, 680);
+            this.MinimumSize = new Size(1020, 560);
             this.StartPosition = FormStartPosition.CenterParent;
             this.Font = UiStyleHelper.NormalFont;
 
@@ -88,7 +88,7 @@ namespace SIGTool.Forms
                 defaultHintText: "F5:全秘境重跑  |  Esc:关闭窗口  |  千场模拟在克隆快照上执行，不修改真实存档");
 
             var splitRoot = UiStyleHelper.CreateProportionalSplit(
-                Orientation.Horizontal, 0.43, 215, 220, "DevConsole.Root");
+                Orientation.Horizontal, 0.40, 195, 240, "DevConsole.Root");
             splitRoot.Padding = new Padding(6, 6, 6, 4);
 
             // ==================== 上半区：左右双分组（快进注入 vs 概率跑表） ====================
@@ -358,7 +358,7 @@ namespace SIGTool.Forms
 
             // ==================== 下半区：左表格（秘境跑表） + 右文本（突破与快进明细） ====================
             var splitBottom = UiStyleHelper.CreateProportionalSplit(
-                Orientation.Vertical, 0.58, 420, 300, "DevConsole.Bottom");
+                Orientation.Vertical, 0.62, 540, 310, "DevConsole.Bottom");
 
             var grpTable = new GroupBox
             {
@@ -371,13 +371,13 @@ namespace SIGTool.Forms
             _gridStageResults = UiStyleHelper.CreateDoubleBufferedGrid();
             _gridStageResults.Columns.Add("ColStage", "秘境关卡");
             _gridStageResults.Columns.Add("ColWinRate", "胜率");
-            _gridStageResults.Columns.Add("ColTurns", "均回合");
-            _gridStageResults.Columns.Add("ColSec", "均耗时");
-            _gridStageResults.Columns.Add("ColHp", "胜场余血");
-            _gridStageResults.Columns.Add("ColPills", "均耗战丹");
-            _gridStageResults.Columns.Add("ColStone", "均掉灵石");
-            _gridStageResults.Columns.Add("ColCore", "均掉妖丹");
-            _gridStageResults.Columns.Add("ColArt", "阵宝期望");
+            _gridStageResults.Columns.Add("ColTurns", "回合");
+            _gridStageResults.Columns.Add("ColSec", "耗时");
+            _gridStageResults.Columns.Add("ColHp", "余血");
+            _gridStageResults.Columns.Add("ColPills", "耗丹");
+            _gridStageResults.Columns.Add("ColStone", "灵石");
+            _gridStageResults.Columns.Add("ColCore", "妖丹");
+            _gridStageResults.Columns.Add("ColArt", "阵宝");
 
             _gridStageResults.Columns["ColStage"].FillWeight = 20;
             _gridStageResults.Columns["ColWinRate"].FillWeight = 11;

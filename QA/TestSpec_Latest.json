@@ -1,6 +1,6 @@
 {
-  "SpecVersion": "0.9.2",
-  "Title": "SIGTool v0.9.2 全模块回归、防跳字像素校验与双皮肤真机截图测试书",
+  "SpecVersion": "0.9.3",
+  "Title": "SIGTool v0.9.3 全模块回归、防跳字像素校验、父容器越界巡检与双皮肤真机截图测试书",
   "RandomSeed": 20261113,
   "Steps": [
     {
@@ -30,6 +30,12 @@
       "Action": "GrantAllItems",
       "IntParam": 4,
       "Desc": "发放丹器物资供界面展示与服丹校验"
+    },
+    {
+      "StepId": "05B_WARMUP_QI",
+      "Action": "FastForwardMonths",
+      "IntParam": 1,
+      "Desc": "快进推演 1 个仙历月攒满掌门气海真元以备冲穴"
     },
     {
       "StepId": "06_SYS02_IMPULSE",
@@ -72,8 +78,8 @@
     {
       "StepId": "12_FAST_FORWARD",
       "Action": "FastForwardMonths",
-      "IntParam": 6,
-      "Desc": "快进推演 6 个仙历月检验经济、吐纳与秘境连战"
+      "IntParam": 5,
+      "Desc": "继续快进推演 5 个仙历月（累计至第 7 月）检验经济、吐纳与奇遇后续"
     },
     {
       "StepId": "13_SWITCH_LIGHT",

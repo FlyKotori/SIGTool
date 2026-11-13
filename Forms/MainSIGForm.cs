@@ -72,7 +72,7 @@ namespace SIGTool.Forms
             this.DoubleBuffered = true;
             this.KeyPreview = true;
             this.Size = _isAutoTestMode
-                ? new Size(1280, 840)
+                ? new Size(1280, 850)
                 : new Size(clientSettings.WindowWidth, clientSettings.WindowHeight);
             this.MinimumSize = new Size(1020, 680);
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -189,7 +189,7 @@ namespace SIGTool.Forms
             _statusStrip = new UcStatusFeedbackStrip(true);
 
             var splitWorkspace = UiStyleHelper.CreateProportionalSplit(
-                Orientation.Horizontal, 0.78, 350, 110, "Main.Workspace");
+                Orientation.Horizontal, 0.80, 440, 115, "Main.Workspace");
 
             _tabMain = new TabControl
             {

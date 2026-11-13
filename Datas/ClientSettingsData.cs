@@ -33,7 +33,7 @@ namespace SIGTool.Datas
 
         // UI-UX-06：主窗体尺寸与各分栏拖拽比例持久化记忆
         public int WindowWidth { get; set; } = 1260;
-        public int WindowHeight { get; set; } = 820;
+        public int WindowHeight { get; set; } = 850;
         public bool IsWindowMaximized { get; set; } = false;
         public Dictionary<string, double> SplitRatios { get; set; } = new Dictionary<string, double>();
 

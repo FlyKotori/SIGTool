@@ -371,17 +371,19 @@ namespace SIGTool.Forms.UIs
         public static void ConfigureProportionalSplit(SplitContainer split, double initialRatio, int minPanel1 = 220, int minPanel2 = 220, string persistKey = null)
         {
             if (split == null) return;
+            string effectiveKey = string.IsNullOrEmpty(persistKey) ? null : ("v2." + persistKey);
             double savedOrInit = ClientSettingsService.Current != null
-                ? ClientSettingsService.Current.GetSplitRatio(persistKey, initialRatio)
+                ? ClientSettingsService.Current.GetSplitRatio(effectiveKey, initialRatio)
                 : initialRatio;
-            double ratio = Math.Max(0.15, Math.Min(0.85, savedOrInit));
+            double ratio = Math.Max(0.15, Math.Min(0.86, savedOrInit));
             bool suppressTrack = false;
+            bool userDragging = false;
 
             Action applyRatio = () =>
             {
                 if (split.IsDisposed) return;
                 int total = (split.Orientation == Orientation.Vertical) ? split.Width : split.Height;
-                int required = minPanel1 + minPanel2 + split.SplitterWidth + 16;
+                int required = minPanel1 + minPanel2 + split.SplitterWidth + 12;
                 if (total < required) return;
 
                 suppressTrack = true;
@@ -408,10 +410,17 @@ namespace SIGTool.Forms.UIs
             };
 
             split.HandleCreated += (s, e) => applyRatio();
+            split.ParentChanged += (s, e) => applyRatio();
+            split.VisibleChanged += (s, e) => applyRatio();
             split.SizeChanged += (s, e) => applyRatio();
+            split.SplitterMoving += (s, e) =>
+            {
+                if (!suppressTrack) userDragging = true;
+            };
             split.SplitterMoved += (s, e) =>
             {
-                if (suppressTrack || split.IsDisposed) return;
+                if (!userDragging || suppressTrack || split.IsDisposed) return;
+                userDragging = false;
                 int total = (split.Orientation == Orientation.Vertical) ? split.Width : split.Height;
                 if (total >= minPanel1 + minPanel2 + 20)
                 {
@@ -419,9 +428,9 @@ namespace SIGTool.Forms.UIs
                     if (userRatio >= 0.12 && userRatio <= 0.88)
                     {
                         ratio = userRatio;
-                        if (!string.IsNullOrEmpty(persistKey) && ClientSettingsService.Current != null)
+                        if (!string.IsNullOrEmpty(effectiveKey) && ClientSettingsService.Current != null)
                         {
-                            ClientSettingsService.Current.SetSplitRatio(persistKey, ratio);
+                            ClientSettingsService.Current.SetSplitRatio(effectiveKey, ratio);
                         }
                     }
                 }

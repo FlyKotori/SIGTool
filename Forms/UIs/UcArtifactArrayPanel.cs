@@ -121,7 +121,7 @@ namespace SIGTool.Forms.UIs
                 Margin = new Padding(0)
             };
             tblLeft.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 76F));
+            tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 82F));
             tblLeft.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             _lblFormationOverview = new Label
@@ -208,9 +208,9 @@ namespace SIGTool.Forms.UIs
             tblRight.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             var pnlForgeRow = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Fill, 28);
-            var btnForge1 = UiStyleHelper.CreateButton("凡铸(80石/35铁/1丹)", (s, e) => DoForgeBatch(1, _batchStepBar.SelectedBatch), UiButtonRole.Default, true);
-            var btnForge2 = UiStyleHelper.CreateButton("灵铸(220石/80铁/4丹)", (s, e) => DoForgeBatch(2, _batchStepBar.SelectedBatch), UiButtonRole.PrimaryBlue, true);
-            var btnForge3 = UiStyleHelper.CreateButton("仙铸(560石/180铁/10丹)", (s, e) => DoForgeBatch(3, _batchStepBar.SelectedBatch), UiButtonRole.WarningAmber, true);
+            var btnForge1 = UiStyleHelper.CreateButton("凡铸·80石", (s, e) => DoForgeBatch(1, _batchStepBar.SelectedBatch), UiButtonRole.Default, true);
+            var btnForge2 = UiStyleHelper.CreateButton("灵铸·220石", (s, e) => DoForgeBatch(2, _batchStepBar.SelectedBatch), UiButtonRole.PrimaryBlue, true);
+            var btnForge3 = UiStyleHelper.CreateButton("仙铸·560石", (s, e) => DoForgeBatch(3, _batchStepBar.SelectedBatch), UiButtonRole.WarningAmber, true);
             _batchStepBar = new UcBatchStepBar("连铸:");
 
             var btnBatchSalvage = UiStyleHelper.CreateButton("批拆未锁凡品", (s, e) =>
@@ -249,7 +249,7 @@ namespace SIGTool.Forms.UIs
                 sortOptions: new string[] { "在阵/品阶", "阵眼共鸣优先", "词条数/阶位" });
             _filterSortBar.OnFilterChanged += () => RefreshView();
 
-            _artifactTileGrid = new UcCompactTileGrid(footerHeight: 118, tileWidth: 146, tileHeight: 44);
+            _artifactTileGrid = new UcCompactTileGrid(footerHeight: 124, tileWidth: 146, tileHeight: 44);
             _artifactTileGrid.OnTileDoubleClicked += tile =>
             {
                 if (_engine.Save == null) return;

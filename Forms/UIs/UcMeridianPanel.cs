@@ -98,9 +98,9 @@ namespace SIGTool.Forms.UIs
                 Margin = new Padding(0)
             };
             tblLeft.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
+            tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
             tblLeft.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 96F));
+            tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 104F));
 
             _lblMeridianHeader = new DoubleBufferedStatusLabel(UiStyleHelper.MonoFont, hasBorder: true, useCardBg: true)
             {
@@ -220,7 +220,7 @@ namespace SIGTool.Forms.UIs
 
             pnlTopBar.Controls.AddRange(new Control[] { _batchStepBar, btnShowAll, _lblLiveResources });
 
-            _acupointTileGrid = new UcCompactTileGrid(footerHeight: 120, tileWidth: 148, tileHeight: 44);
+            _acupointTileGrid = new UcCompactTileGrid(footerHeight: 124, tileWidth: 152, tileHeight: 44);
             _acupointTileGrid.OnTileDoubleClicked += tile =>
             {
                 DoImpulseBatch(tile.Id, _batchStepBar.SelectedBatch);
@@ -406,7 +406,7 @@ namespace SIGTool.Forms.UIs
                 : (sum.HasXiaoZhouTian ? "★任督小周天贯通" : "奇经筑脉中");
 
             string headerTxt = string.Format(
-                "已贯通穴位: {0}/{1}  |  周天境况: {2}\r\n功法独立乘区: +{3:P0}  |  吐纳速率: +{4:P0}  |  渡劫加成: +{5:P1}",
+                "已贯通穴位: {0}/{1} | 周天: {2}\r\n功法乘区:+{3:P0} | 吐纳:+{4:P0} | 渡劫:+{5:P1}",
                 sum.UnlockedCount, sum.TotalCount, ztState,
                 sum.TechMultiplierAdd, sum.QiRatePctAdd, sum.BreakthroughRateAdd);
             if (_lblMeridianHeader.Text != headerTxt) _lblMeridianHeader.Text = headerTxt;

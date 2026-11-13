@@ -106,10 +106,10 @@ namespace SIGTool.Forms.UIs
 
             var grpGrid = new GroupBox
             {
-                Text = "【宗门 6×4 五行灵脉堪舆图（双击地块=开辟/升阶/营造，右键地块=选建/拆除菜单）】",
+                Text = "【宗门 6×4 五行灵脉图（双击=开辟/升阶/营造 · 右键=选建/拆除）】",
                 Dock = DockStyle.Fill,
                 Font = UiStyleHelper.BoldFont,
-                Padding = new Padding(8)
+                Padding = new Padding(8, 10, 8, 8)
             };
 
             var tblGrid = new TableLayoutPanel

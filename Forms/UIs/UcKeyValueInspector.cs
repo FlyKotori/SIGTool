@@ -100,10 +100,30 @@ namespace SIGTool.Forms.UIs
 
             int bottomReserve = string.IsNullOrEmpty(_subNoteLine) ? 4 : 20;
             int availH = Math.Max(18, rect.Height - y - bottomReserve);
-            bool twoColGrid = (rect.Width >= 420 && _rows.Count >= 3);
+
+            int maxLblPx = 52;
+            int maxCurPx = 0;
+            int maxRowTotalPx = 0;
+            for (int i = 0; i < _rows.Count; i++)
+            {
+                var rw = _rows[i];
+                int lp = TextRenderer.MeasureText(g, rw.Label ?? "", UiStyleHelper.SmallFont, new Size(1200, 24), TextFormatFlags.NoPrefix).Width + 8;
+                int cp = string.IsNullOrEmpty(rw.CurrentValue)
+                    ? 0
+                    : TextRenderer.MeasureText(g, rw.CurrentValue, UiStyleHelper.SmallMonoReg, new Size(1200, 24), TextFormatFlags.NoPrefix).Width + 10;
+                int dp = TextRenderer.MeasureText(g, rw.DeltaOrTargetValue ?? "", UiStyleHelper.SmallMonoBold, new Size(1200, 24), TextFormatFlags.NoPrefix).Width + 10;
+                if (lp > maxLblPx) maxLblPx = lp;
+                if (cp > maxCurPx) maxCurPx = cp;
+                if (lp + cp + dp > maxRowTotalPx) maxRowTotalPx = lp + cp + dp;
+            }
+
+            int halfInnerW = (rect.Width - 16) / 2 - 10;
+            bool canFitSingleColVertically = (_rows.Count * 17 <= availH + 2);
+            bool twoColGrid = (rect.Width >= 460 && _rows.Count >= 3) &&
+                              (maxRowTotalPx <= halfInnerW || !canFitSingleColVertically);
             int colCount = twoColGrid ? 2 : 1;
             int rowCount = (int)Math.Ceiling(_rows.Count / (double)colCount);
-            int rowH = Math.Max(17, Math.Min(21, availH / Math.Max(1, rowCount)));
+            int rowH = Math.Max(16, Math.Min(21, availH / Math.Max(1, rowCount)));
 
             int colW = (rect.Width - 16) / colCount;
             using (var cellSepPen = new Pen(p.BorderSubtle))
@@ -125,9 +145,15 @@ namespace SIGTool.Forms.UIs
                     int innerW = colW - (twoColGrid ? 10 : 2);
                     var item = _rows[i];
 
-                    int lblW = Math.Max(64, (int)(innerW * 0.34));
-                    int curW = string.IsNullOrEmpty(item.CurrentValue) ? 0 : (int)(innerW * 0.28);
-                    int valW = innerW - lblW - curW;
+                    int lblW = Math.Max(50, Math.Min((int)(innerW * 0.28), maxLblPx));
+                    int remainW = Math.Max(40, innerW - lblW);
+                    int curW = 0;
+                    if (!string.IsNullOrEmpty(item.CurrentValue))
+                    {
+                        int curNeed = TextRenderer.MeasureText(g, item.CurrentValue, UiStyleHelper.SmallMonoReg, new Size(1200, 24), TextFormatFlags.NoPrefix).Width + 8;
+                        curW = Math.Max((int)(remainW * 0.34), Math.Min((int)(remainW * 0.50), curNeed));
+                    }
+                    int valW = Math.Max(20, remainW - curW);
 
                     var rLbl = new Rectangle(cellX, cellY, lblW, rowH);
                     TextRenderer.DrawText(g, item.Label, UiStyleHelper.SmallFont, rLbl,

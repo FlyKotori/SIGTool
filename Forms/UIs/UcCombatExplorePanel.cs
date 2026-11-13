@@ -58,7 +58,7 @@ namespace SIGTool.Forms.UIs
 
         private void BuildUI()
         {
-            var splitOuter = UiStyleHelper.CreateProportionalSplit(Orientation.Horizontal, 0.34, 155, 240, "Tab4.Outer");
+            var splitOuter = UiStyleHelper.CreateProportionalSplit(Orientation.Horizontal, 0.36, 165, 250, "Tab4.Outer");
 
             var grpStage = new GroupBox
             {
@@ -122,7 +122,7 @@ namespace SIGTool.Forms.UIs
             tblStage.Controls.Add(pnlStageBar, 1, 0);
             grpStage.Controls.Add(tblStage);
 
-            var splitBattle = UiStyleHelper.CreateProportionalSplit(Orientation.Horizontal, 0.58, 150, 95, "Tab4.Battle");
+            var splitBattle = UiStyleHelper.CreateProportionalSplit(Orientation.Horizontal, 0.62, 160, 85, "Tab4.Battle");
 
             var tblMid = new TableLayoutPanel
             {

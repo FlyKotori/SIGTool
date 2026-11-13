@@ -55,7 +55,7 @@ namespace SIGTool.Forms
 
             var report = new AutoTestReportRoot
             {
-                ToolVersion = "SIGTool v0.9.2",
+                ToolVersion = "SIGTool v0.9.3",
                 TimestampLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 BuildSucceeded = true
             };
@@ -338,6 +338,12 @@ namespace SIGTool.Forms
                     return false;
                 }
                 PumpUi(sub, 80);
+                int subTrunc = 0;
+                int subNonGray = 0;
+                InspectControlTreeRecursive(sub, UiStyleHelper.Current.IsGrayscale, ref subTrunc, ref subNonGray, report.LayoutWarnings);
+                _lastTruncatedButtons += subTrunc;
+                _lastNonGrayscaleColors += subNonGray;
+
                 string fn = !string.IsNullOrEmpty(step.OutputFile)
                     ? step.OutputFile
                     : string.Format("{0:D2}_SubForm_{1}.png", report.Screenshots.Count + 1, step.TargetKey);
@@ -345,8 +351,8 @@ namespace SIGTool.Forms
                 report.Screenshots.Add(fn);
                 form.AutoTestCloseSubWindows();
                 PumpUi(form, 40);
-                detail = "已截取独立子窗口 [" + step.TargetKey + "] -> " + fn;
-                return true;
+                detail = string.Format("已截取并巡检独立子窗口 [{0}] -> {1} (越界控件:{2})", step.TargetKey, fn, subTrunc);
+                return subTrunc == 0 && subNonGray == 0;
             }
 
             detail = "未识别的测试动作：" + act;
@@ -476,15 +482,33 @@ namespace SIGTool.Forms
                 }
             }
 
-            var btn = root as Button;
-            if (btn != null && btn.AutoSize && !string.IsNullOrEmpty(btn.Text) && !btn.Text.Contains("\n"))
+            var tile = root as UcCompactTile;
+            if (tile != null)
             {
-                if (btn.Right > (btn.Parent != null ? btn.Parent.ClientSize.Width + 6 : 99999))
+                string tileOverflow;
+                if (tile.HasTextOverflow(out tileOverflow))
                 {
                     truncated++;
                     if (warnings.Count < 20)
-                        warnings.Add(string.Format("[Clipped Button] '{0}' Right={1} > ParentW={2}",
-                            btn.Text, btn.Right, btn.Parent != null ? btn.Parent.ClientSize.Width : -1));
+                        warnings.Add("[CompactTile Overflow] " + tileOverflow);
+                }
+            }
+
+            if (root.Parent != null && !(root is InteractiveSlotButton && root.Parent is UcCompactTile) &&
+                (root is Button || root is CheckBox || root is ComboBox || root is UcBatchStepBar))
+            {
+                var scParent = root.Parent as ScrollableControl;
+                bool parentScrolls = (scParent != null && scParent.AutoScroll);
+                if (!parentScrolls)
+                {
+                    if (root.Right > root.Parent.ClientSize.Width + 4 || root.Bottom > root.Parent.ClientSize.Height + 4)
+                    {
+                        truncated++;
+                        if (warnings.Count < 20)
+                            warnings.Add(string.Format("[Parent Overflow] {0} '{1}' Rect=({2},{3},{4},{5}) > Parent=({6},{7})",
+                                root.GetType().Name, root.Text, root.Left, root.Top, root.Right, root.Bottom,
+                                root.Parent.ClientSize.Width, root.Parent.ClientSize.Height));
+                    }
                 }
             }
 

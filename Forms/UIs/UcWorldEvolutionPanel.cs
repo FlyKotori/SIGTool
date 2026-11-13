@@ -147,6 +147,8 @@ namespace SIGTool.Forms.UIs
                     }
                 }, i == 0 ? UiButtonRole.PrimaryBlue : UiButtonRole.Default, false);
                 btn.AutoSize = false;
+                btn.AutoEllipsis = true;
+                btn.Font = UiStyleHelper.SmallFont;
                 btn.Dock = DockStyle.Fill;
                 btn.TextAlign = ContentAlignment.MiddleLeft;
                 btn.Padding = new Padding(6, 0, 6, 0);
@@ -176,7 +178,7 @@ namespace SIGTool.Forms.UIs
                 Margin = new Padding(0)
             };
             tblFac.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tblFac.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            tblFac.RowStyles.Add(new RowStyle(SizeType.Absolute, 62F));
             tblFac.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             _lblTrendBanner = new DoubleBufferedStatusLabel(UiStyleHelper.SmallMonoReg, hasBorder: true, useCardBg: true)
@@ -252,7 +254,7 @@ namespace SIGTool.Forms.UIs
             };
             barMkt.Controls.AddRange(new Control[] { _batchStepBar, _lblMarketHeader });
 
-            _marketTileGrid = new UcCompactTileGrid(footerHeight: 122, tileWidth: 148, tileHeight: 44);
+            _marketTileGrid = new UcCompactTileGrid(footerHeight: 126, tileWidth: 156, tileHeight: 44);
             _marketTileGrid.OnTileDoubleClicked += tile =>
             {
                 DoBuyListing(tile.Id, _batchStepBar.SelectedBatch);
