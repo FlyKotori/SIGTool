@@ -51,10 +51,13 @@
     <Compile Include="Datas\SIGEnums.cs" />
     <Compile Include="Datas\ClientSettingsData.cs" />
     <Compile Include="Datas\ArtifactFormationDatas.cs" />
+    <Compile Include="Datas\MeridianDatas.cs" />
+    <Compile Include="Datas\WorldEvolutionDatas.cs" />
     <Compile Include="Datas\CharacterDatas.cs" />
     <Compile Include="Datas\SectBuildingDatas.cs" />
     <Compile Include="Datas\CombatDatas.cs" />
     <Compile Include="Datas\SIGSaveData.cs" />
+    <Compile Include="Datas\AutoTestDatas.cs" />
     <!-- 2. Configs 配置层 -->
     <Compile Include="Configs\SIGConfigModels.cs" />
     <Compile Include="Configs\SIGConfigTable.cs" />
@@ -66,6 +69,8 @@
     <Compile Include="Modules\Core\SaveLoadService.cs" />
     <Compile Include="Modules\Core\SIGEngine.cs" />
     <Compile Include="Modules\Logics\ArtifactFormationLogic.cs" />
+    <Compile Include="Modules\Logics\MeridianLogic.cs" />
+    <Compile Include="Modules\Logics\WorldEvolutionLogic.cs" />
     <Compile Include="Modules\Logics\CultivationLogic.cs" />
     <Compile Include="Modules\Logics\SectBuildLogic.cs" />
     <Compile Include="Modules\Logics\CraftAndItemLogic.cs" />
@@ -93,6 +98,7 @@
     <Compile Include="Forms\FormDevBalanceConsole.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Forms\AutoTestRunner.cs" />
     <Compile Include="Forms\UIs\UiStyleHelper.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -130,6 +136,12 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\UIs\UcArtifactArrayPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcMeridianPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\UIs\UcWorldEvolutionPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>

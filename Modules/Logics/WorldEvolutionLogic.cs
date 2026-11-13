@@ -891,7 +891,7 @@ namespace SIGTool.Modules.Logics
                 {
                     var art = ArtifactFormationLogic.GenerateRandomArtifact(save.Sect, rng, opt.SuccessArtifactTier, opt.SuccessArtifactTier);
                     save.Sect.ArtifactVault.Add(art);
-                    gains.Add(string.Format("获阵宝【{0}】", art.DisplayName));
+                    gains.Add(string.Format("获阵宝【{0}】", art.NameCn));
                 }
                 if (!string.IsNullOrEmpty(opt.SuccessBuffName) && opt.SuccessBuffMonths > 0)
                 {

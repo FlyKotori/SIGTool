@@ -1,0 +1,166 @@
+{
+  "SpecVersion": "0.9.2",
+  "Title": "SIGTool v0.9.2 全模块回归、防跳字像素校验与双皮肤真机截图测试书",
+  "RandomSeed": 20261113,
+  "Steps": [
+    {
+      "StepId": "01_INIT_DARK",
+      "Action": "SetTheme",
+      "TargetKey": "MinimalDarkGray",
+      "Desc": "切换至默认纯灰度深灰办公皮肤"
+    },
+    {
+      "StepId": "02_ANTI_JITTER",
+      "Action": "VerifyHeaderAntiJitter",
+      "Desc": "实测结界 611->688 跳变时顶栏右侧零像素位移"
+    },
+    {
+      "StepId": "03_LAYOUT_AUDIT_DARK",
+      "Action": "AuditControlLayout",
+      "Desc": "巡检全 7 页签控件越界与纯灰度 R==G==B 合规性"
+    },
+    {
+      "StepId": "04_GRANT_RES",
+      "Action": "GrantAllResources",
+      "Amount": 3000.0,
+      "Desc": "发放测试资材准备验证冲穴与坊市"
+    },
+    {
+      "StepId": "05_GRANT_ITEMS",
+      "Action": "GrantAllItems",
+      "IntParam": 4,
+      "Desc": "发放丹器物资供界面展示与服丹校验"
+    },
+    {
+      "StepId": "06_SYS02_IMPULSE",
+      "Action": "ImpulseAcupoint",
+      "TargetKey": "ACU_DU_1",
+      "IntParam": 10,
+      "Desc": "测试 SYS-02 冲击督脉起穴【长强穴】"
+    },
+    {
+      "StepId": "07_SYS03_WORLD",
+      "Action": "TriggerWorldShiftAndEncounter",
+      "Desc": "测试 SYS-03 轮转岁运天象、刷新坊市并入队奇遇"
+    },
+    {
+      "StepId": "08_SYS03_MARKET",
+      "Action": "BuyMarketListing",
+      "TargetKey": "MKT_RES_HERB",
+      "IntParam": 2,
+      "Desc": "测试九州浮动坊市批量采购灵草"
+    },
+    {
+      "StepId": "09_SHOT_ALL_DARK",
+      "Action": "CaptureAllTabs",
+      "TargetKey": "Dark",
+      "Desc": "截取深灰灰度皮肤下全部 7 大页签真机 PNG"
+    },
+    {
+      "StepId": "10_SHOT_DEV_CONSOLE",
+      "Action": "CaptureSubForm",
+      "TargetKey": "DevConsole",
+      "OutputFile": "09_SubForm_DevConsole_Dark.png",
+      "Desc": "截取 F12 开发者数值平衡测试台真机 PNG"
+    },
+    {
+      "StepId": "11_SYS03_RESOLVE",
+      "Action": "ResolveFirstEncounter",
+      "IntParam": 0,
+      "Desc": "抉择第一桩待决奇遇验证因果结算"
+    },
+    {
+      "StepId": "12_FAST_FORWARD",
+      "Action": "FastForwardMonths",
+      "IntParam": 6,
+      "Desc": "快进推演 6 个仙历月检验经济、吐纳与秘境连战"
+    },
+    {
+      "StepId": "13_SWITCH_LIGHT",
+      "Action": "SetTheme",
+      "TargetKey": "CleanOfficeLight",
+      "Desc": "切换至清爽白底灰度办公皮肤"
+    },
+    {
+      "StepId": "14_LAYOUT_AUDIT_LIGHT",
+      "Action": "AuditControlLayout",
+      "Desc": "巡检白底灰度皮肤下全页签纯灰合规性"
+    },
+    {
+      "StepId": "15_SHOT_TAB6_LIGHT",
+      "Action": "CaptureTab",
+      "IntParam": 5,
+      "OutputFile": "10_Tab6_Meridian_Light.png",
+      "Desc": "截取白底皮肤下经脉周天页签"
+    },
+    {
+      "StepId": "16_SHOT_TAB7_LIGHT",
+      "Action": "CaptureTab",
+      "IntParam": 6,
+      "OutputFile": "11_Tab7_WorldEvolution_Light.png",
+      "Desc": "截取白底皮肤下天下奇遇与坊市页签"
+    }
+  ],
+  "Assertions": [
+    {
+      "MetricPath": "Sect.BarrierMissingHp",
+      "Op": "==",
+      "Expected": 0.0,
+      "Desc": "新开局初始护山结界应处于 100% 满值"
+    },
+    {
+      "MetricPath": "UI.HeaderBarrierDigitsDiffPixels",
+      "Op": ">",
+      "Expected": 0.0,
+      "Desc": "结界 611->688 时结界槽位像素确实完成重绘"
+    },
+    {
+      "MetricPath": "UI.HeaderRightRegionDiffPixels",
+      "Op": "==",
+      "Expected": 0.0,
+      "Desc": "结界数字变化时顶栏右侧【兽潮+按钮区】0 像素跳动"
+    },
+    {
+      "MetricPath": "UI.TruncatedButtonCount",
+      "Op": "==",
+      "Expected": 0.0,
+      "Desc": "全 7 页签自适应按钮 0 越界截断"
+    },
+    {
+      "MetricPath": "UI.NonGrayscaleColorCount",
+      "Op": "==",
+      "Expected": 0.0,
+      "Desc": "纯灰度皮肤下全控件严格满足 R==G==B"
+    },
+    {
+      "MetricPath": "Leader.UnlockedAcupoints",
+      "Op": ">=",
+      "Expected": 1.0,
+      "Desc": "SYS-02 督脉穴位成功贯通并入账"
+    },
+    {
+      "MetricPath": "World.FactionCount",
+      "Op": "==",
+      "Expected": 5.0,
+      "Desc": "SYS-03 五大修仙势力正常演化"
+    },
+    {
+      "MetricPath": "World.MarketCount",
+      "Op": "==",
+      "Expected": 10.0,
+      "Desc": "SYS-03 九州坊市 10 项标的正常挂牌"
+    },
+    {
+      "MetricPath": "World.ResolvedEncounterCount",
+      "Op": ">=",
+      "Expected": 1.0,
+      "Desc": "SYS-03 奇遇事件选项成功结算"
+    },
+    {
+      "MetricPath": "Save.TotalMonths",
+      "Op": ">=",
+      "Expected": 7.0,
+      "Desc": "时间快进 6 个仙历月正常推进仙历时钟"
+    }
+  ]
+}

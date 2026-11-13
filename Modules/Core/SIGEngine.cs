@@ -27,6 +27,34 @@ namespace SIGTool.Modules.Core
             Rng = new Random();
         }
 
+        /// <summary>
+        /// 自动化测试专用隔离初始化（固定随机种子，纯内存新建宗门，绝不读写覆盖玩家本地存档槽位）
+        /// </summary>
+        public void InitializeForAutoTest(int seed)
+        {
+            Rng = new Random(seed);
+            string cfgMsg;
+            ConfigLoader.LoadOrInitConfig(ConfigLoader.DefaultConfigFilePath, out cfgMsg);
+
+            Save = SaveLoadService.CreateNewSIGSave();
+            WorldEvolutionLogic.EnsureWorldInitialized(Save);
+            SectBuildLogic.RefreshSectDerivedCaps(Save);
+            CultivationLogic.RecalculateAllCharacters(Save);
+
+            Save.Sect.BarrierCurHp = Save.Sect.BarrierMaxHp;
+            Save.Leader.BattleStats.CurHp = Save.Leader.BattleStats.MaxHp;
+            Save.Leader.BattleStats.CurMp = Save.Leader.BattleStats.MaxMp;
+            for (int i = 0; i < Save.Disciples.Count; i++)
+            {
+                Save.Disciples[i].BattleStats.CurHp = Save.Disciples[i].BattleStats.MaxHp;
+                Save.Disciples[i].BattleStats.CurMp = Save.Disciples[i].BattleStats.MaxMp;
+            }
+
+            EventBus.ClearLogs();
+            EventBus.PublishLog(Save.GetImmortalDateText(), LogCategory.System, "[AutoTest] " + cfgMsg);
+            EventBus.NotifyStateChanged();
+        }
+
         public void Initialize()
         {
             string cfgMsg;

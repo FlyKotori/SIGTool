@@ -22,6 +22,8 @@ namespace SIGTool.Forms.UIs
         private string _barrierVal = "600/600";
         private string _raidVal = "12月";
         private string _signature = "";
+        public int LastBarrierSlotX { get; private set; } = 0;
+        public int LastRaidSlotX { get; private set; } = 0;
 
         public UcHeaderStatusPlaque()
         {
@@ -92,7 +94,9 @@ namespace SIGTool.Forms.UIs
 
             // 2. 定宽分槽绘制：门人 | 结界 | 兽潮
             x = DrawMetricSlot(g, x, h, rect.Width, "门人:", _discVal, fgSub, fgMain, sepCol, flags);
+            LastBarrierSlotX = x;
             x = DrawMetricSlot(g, x, h, rect.Width, "结界:", _barrierVal, fgSub, fgMain, sepCol, flags);
+            LastRaidSlotX = x;
             DrawMetricSlot(g, x, h, rect.Width, "兽潮:", _raidVal, fgSub, fgMain, sepCol, flags);
         }
 
@@ -299,6 +303,9 @@ namespace SIGTool.Forms.UIs
         private ComboBox _cmbSlot;
 
         private readonly Dictionary<ResourceType, UcResourceCell> _resCells = new Dictionary<ResourceType, UcResourceCell>();
+
+        public int PlaqueBarrierSlotX { get { return _statusPlaque != null ? _statusPlaque.Left + _statusPlaque.LastBarrierSlotX : 0; } }
+        public int PlaqueRaidSlotX { get { return _statusPlaque != null ? _statusPlaque.Left + _statusPlaque.LastRaidSlotX : 0; } }
 
         public TopResourceHeaderBar(
             SIGEngine engine,

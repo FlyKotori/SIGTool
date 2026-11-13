@@ -17,6 +17,7 @@ namespace SIGTool.Forms
     public class MainSIGForm : Form, IThemeableView
     {
         private readonly SIGEngine _engine;
+        private readonly bool _isAutoTestMode;
         private readonly Timer _uiTickTimer;
         private readonly Stopwatch _stopwatch = new Stopwatch();
         private double _lastElapsedSec = 0.0;
@@ -58,17 +59,24 @@ namespace SIGTool.Forms
         private bool _restoreCombatOnWake = false;
         private bool _restoreDevConsoleOnWake = false;
 
-        public MainSIGForm()
+        public SIGEngine Engine { get { return _engine; } }
+        public TopResourceHeaderBar HeaderBarControl { get { return _headerBar; } }
+        public TabControl MainTabControl { get { return _tabMain; } }
+
+        public MainSIGForm(bool isAutoTestMode = false, int autoTestSeed = 20261113)
         {
-            var clientSettings = ClientSettingsService.Load();
+            _isAutoTestMode = isAutoTestMode;
+            var clientSettings = _isAutoTestMode ? new ClientSettingsData() : ClientSettingsService.Load();
             UiStyleHelper.SetTheme(clientSettings.GetThemeModeEnum(), false);
 
             this.DoubleBuffered = true;
             this.KeyPreview = true;
-            this.Size = new Size(clientSettings.WindowWidth, clientSettings.WindowHeight);
+            this.Size = _isAutoTestMode
+                ? new Size(1280, 840)
+                : new Size(clientSettings.WindowWidth, clientSettings.WindowHeight);
             this.MinimumSize = new Size(1020, 680);
             this.StartPosition = FormStartPosition.CenterScreen;
-            if (clientSettings.IsWindowMaximized)
+            if (!_isAutoTestMode && clientSettings.IsWindowMaximized)
             {
                 this.WindowState = FormWindowState.Maximized;
             }
@@ -77,20 +85,93 @@ namespace SIGTool.Forms
             _engine = new SIGEngine();
 
             BuildMainLayout();
-            InitializeSystemTray();
+            if (!_isAutoTestMode)
+            {
+                InitializeSystemTray();
+            }
             BindEngineEvents();
 
             UiStyleHelper.OnThemeChanged += ApplyFullAppTheme;
 
-            _engine.Initialize();
+            if (_isAutoTestMode)
+            {
+                _engine.InitializeForAutoTest(autoTestSeed);
+            }
+            else
+            {
+                _engine.Initialize();
+            }
+
             ApplyFullAppTheme();
             UpdateWindowTitleAndHeaderUtilityLabels();
             RefreshActiveViews();
 
-            _stopwatch.Start();
             _uiTickTimer = new Timer { Interval = 100 };
             _uiTickTimer.Tick += OnFrameTimerTick;
-            _uiTickTimer.Start();
+            if (!_isAutoTestMode)
+            {
+                _stopwatch.Start();
+                _uiTickTimer.Start();
+            }
+        }
+
+        public void AutoTestSelectTab(int tabIdx)
+        {
+            if (_tabMain != null && tabIdx >= 0 && tabIdx < _tabMain.TabPages.Count)
+            {
+                _tabMain.SelectedIndex = tabIdx;
+            }
+            RefreshActiveViews();
+        }
+
+        public void AutoTestSetTheme(UiThemeMode mode)
+        {
+            UiStyleHelper.SetTheme(mode, true);
+            RefreshActiveViews();
+        }
+
+        public void AutoTestRefreshAll()
+        {
+            RefreshActiveViews();
+        }
+
+        public Form AutoTestOpenSubWindow(string windowKey)
+        {
+            if (string.Equals(windowKey, "Vault", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenOrFocusVaultWindow();
+                return _vaultWindow;
+            }
+            if (string.Equals(windowKey, "CharSheet", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenOrFocusCharSheetWindow(_engine.Save.Leader);
+                return _charSheetWindow;
+            }
+            if (string.Equals(windowKey, "Combat", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenOrFocusCombatWindow();
+                return _combatPopupForm;
+            }
+            if (string.Equals(windowKey, "DevConsole", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenOrFocusDevConsole();
+                return _devConsoleWindow;
+            }
+            return null;
+        }
+
+        public void AutoTestCloseSubWindows()
+        {
+            if (_devConsoleWindow != null && !_devConsoleWindow.IsDisposed) _devConsoleWindow.Close();
+            if (_combatPopupForm != null && !_combatPopupForm.IsDisposed) _combatPopupForm.Close();
+            if (_charSheetWindow != null && !_charSheetWindow.IsDisposed) _charSheetWindow.Close();
+            if (_vaultWindow != null && !_vaultWindow.IsDisposed) _vaultWindow.Close();
+        }
+
+        public void AutoTestExit()
+        {
+            AutoTestCloseSubWindows();
+            RequestExplicitExit();
         }
 
         private void BuildMainLayout()
@@ -504,7 +585,7 @@ namespace SIGTool.Forms
 
             string targetTitle = s.UseMinimalWindowTitle
                 ? "SIGTool"
-                : "SIGTool v0.9 - 挂机修仙 · 宗门营造 · 奇经周天 · 九州奇遇 (.NET Framework 4.7.2)";
+                : "SIGTool v0.9.2 - 挂机修仙 · 宗门营造 · 奇经周天 · 九州奇遇 (.NET Framework 4.7.2)";
             if (this.Text != targetTitle) this.Text = targetTitle;
 
             if (_headerBar != null)
@@ -944,6 +1025,14 @@ namespace SIGTool.Forms
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            if (_isAutoTestMode)
+            {
+                if (_uiTickTimer != null) _uiTickTimer.Stop();
+                UiStyleHelper.OnThemeChanged -= ApplyFullAppTheme;
+                base.OnFormClosing(e);
+                return;
+            }
+
             if (e.CloseReason == CloseReason.UserClosing &&
                 !_explicitExitRequested &&
                 ClientSettingsService.Current.CloseButtonMinimizesToTray)
