@@ -22,7 +22,7 @@ namespace SIGTool.Forms.UIs
 
         private UcCompactTileGrid _stageTileGrid;
         private CheckBox _chkAutoRepeat;
-        private Label _lblBattleHeader;
+        private DoubleBufferedStatusLabel _lblBattleHeader;
         private FlowLayoutPanel _pnlTacticalBar;
 
         private DataGridView _gridAllies;
@@ -136,11 +136,10 @@ namespace SIGTool.Forms.UIs
             tblMid.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tblMid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
 
-            _lblBattleHeader = new Label
+            _lblBattleHeader = new DoubleBufferedStatusLabel(UiStyleHelper.SmallMonoBold, hasBorder: false, useCardBg: false)
             {
                 Dock = DockStyle.Fill,
-                Font = UiStyleHelper.BoldFont,
-                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(2, 0, 2, 0),
                 Text = "【当前战况】休整待命..."
             };
 
@@ -153,6 +152,8 @@ namespace SIGTool.Forms.UIs
             _gridAllies.Columns["ColName"].FillWeight = 32;
             _gridAllies.Columns["ColHp"].FillWeight = 36;
             _gridAllies.Columns["ColMpAtb"].FillWeight = 32;
+            _gridAllies.Columns["ColHp"].DefaultCellStyle.Font = UiStyleHelper.SmallMonoReg;
+            _gridAllies.Columns["ColMpAtb"].DefaultCellStyle.Font = UiStyleHelper.SmallMonoReg;
 
             _gridEnemies = UiStyleHelper.CreateDoubleBufferedGrid();
             _gridEnemies.Columns.Add("ColName", "敌方妖邪");
@@ -471,7 +472,7 @@ namespace SIGTool.Forms.UIs
             }
             else if (cs.AutoRepeatExpedition && cs.RestCooldownSec > 0)
             {
-                statusLine = string.Format("… 连战调息中（{0:F1}s 后再探【{1}】）  |  累计胜场:{2}",
+                statusLine = string.Format("… 连战调息中（{0,4:F1}s 后再探【{1}】）  |  累计胜场:{2}",
                     cs.RestCooldownSec, cs.StageName, cs.TotalVictories);
             }
             else
@@ -514,17 +515,17 @@ namespace SIGTool.Forms.UIs
             {
                 var u = units[i];
                 var row = grid.Rows[i];
-                row.Cells[0].Value = u.Name + (u.IsAlive ? "" : "[退]");
+                UiStyleHelper.SetCellIfChanged(row.Cells[0], u.Name + (u.IsAlive ? "" : "[退]"));
                 if (isAlly)
                 {
                     string sh = u.ShieldHp > 0 ? string.Format("+盾{0:F0}", u.ShieldHp) : "";
-                    row.Cells[1].Value = string.Format("{0:F0}/{1:F0}{2}", u.CurHp, u.MaxHp, sh);
-                    row.Cells[2].Value = string.Format("MP:{0:F0} | {1:F0}%", u.CurMp, Math.Min(100.0, u.ActionGauge));
+                    UiStyleHelper.SetCellIfChanged(row.Cells[1], UiStyleHelper.FormatFixedPair(u.CurHp, u.MaxHp, 3) + sh);
+                    UiStyleHelper.SetCellIfChanged(row.Cells[2], string.Format("MP:{0} | {1,3:F0}%", UiStyleHelper.PadInt(u.CurMp, 3), Math.Min(100.0, u.ActionGauge)));
                 }
                 else
                 {
-                    row.Cells[1].Value = string.Format("{0:F0}/{1:F0} ({2})", u.CurHp, u.MaxHp, EnumTextMap.ElemShortCn(u.Element));
-                    row.Cells[2].Value = string.Format("{0:F0}%", Math.Min(100.0, u.ActionGauge));
+                    UiStyleHelper.SetCellIfChanged(row.Cells[1], string.Format("{0} ({1})", UiStyleHelper.FormatFixedPair(u.CurHp, u.MaxHp, 3), EnumTextMap.ElemShortCn(u.Element)));
+                    UiStyleHelper.SetCellIfChanged(row.Cells[2], string.Format("{0,3:F0}%", Math.Min(100.0, u.ActionGauge)));
                 }
             }
         }

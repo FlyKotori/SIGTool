@@ -20,12 +20,12 @@ namespace SIGTool.Forms.UIs
     {
         private readonly SIGEngine _engine;
 
-        private Label _lblMeridianHeader;
+        private DoubleBufferedStatusLabel _lblMeridianHeader;
         private TreeView _treeMeridians;
         private Label _lblMilestoneBox;
 
         private UcBatchStepBar _batchStepBar;
-        private Label _lblLiveResources;
+        private DoubleBufferedStatusLabel _lblLiveResources;
         private UcCompactTileGrid _acupointTileGrid;
 
         private string _branchFilterKey = "ALL"; // ALL / DuMai / RenMai / ChongMai / DaiMai
@@ -102,11 +102,9 @@ namespace SIGTool.Forms.UIs
             tblLeft.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tblLeft.RowStyles.Add(new RowStyle(SizeType.Absolute, 96F));
 
-            _lblMeridianHeader = new Label
+            _lblMeridianHeader = new DoubleBufferedStatusLabel(UiStyleHelper.MonoFont, hasBorder: true, useCardBg: true)
             {
                 Dock = DockStyle.Fill,
-                Font = UiStyleHelper.MonoFont,
-                BorderStyle = BorderStyle.FixedSingle,
                 Padding = new Padding(6, 4, 6, 4),
                 Margin = new Padding(0, 0, 0, 6),
                 Text = "经脉周天读取中..."
@@ -211,11 +209,12 @@ namespace SIGTool.Forms.UIs
             }, UiButtonRole.Default, true);
             UiStyleHelper.SetToolTip(btnShowAll, "取消左侧单脉筛选，显示全部四脉 24 处要穴");
 
-            _lblLiveResources = new Label
+            _lblLiveResources = new DoubleBufferedStatusLabel(UiStyleHelper.SmallMonoReg, hasBorder: false, useCardBg: false)
             {
-                AutoSize = true,
-                Font = UiStyleHelper.SmallMonoReg,
-                Margin = new Padding(8, 5, 0, 0),
+                AutoSize = false,
+                Size = new Size(430, 24),
+                Padding = new Padding(4, 0, 0, 0),
+                Margin = new Padding(6, 2, 0, 0),
                 Text = "真元: 0/0"
             };
 
@@ -425,11 +424,11 @@ namespace SIGTool.Forms.UIs
             if (_lblMilestoneBox.Text != milestoneTxt) _lblMilestoneBox.Text = milestoneTxt;
 
             string liveResTxt = string.Format(
-                "掌门可用真元: {0:F0}/{1:F0}  |  灵石: {2:F0}  |  灵草: {3:F0}  |  妖丹: {4:F0}",
-                ld.CurQi, ld.MaxQi,
-                sect.GetResource(ResourceType.SpiritStone),
-                sect.GetResource(ResourceType.SpiritHerb),
-                sect.GetResource(ResourceType.MonsterCore));
+                "可用真元:{0} | 灵石:{1} | 灵草:{2} | 妖丹:{3}",
+                UiStyleHelper.FormatFixedPair(ld.CurQi, ld.MaxQi, 4),
+                UiStyleHelper.PadInt(sect.GetResource(ResourceType.SpiritStone), 5),
+                UiStyleHelper.PadInt(sect.GetResource(ResourceType.SpiritHerb), 4),
+                UiStyleHelper.PadInt(sect.GetResource(ResourceType.MonsterCore), 3));
             if (_lblLiveResources.Text != liveResTxt) _lblLiveResources.Text = liveResTxt;
 
             UpdateTreeNodesInPlace(save, ld, sum);

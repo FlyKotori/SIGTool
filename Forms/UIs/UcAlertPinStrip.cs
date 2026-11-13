@@ -57,7 +57,7 @@ namespace SIGTool.Forms.UIs
                 Dock = DockStyle.Fill,
                 WrapContents = false,
                 AutoScroll = false,
-                BackColor = Color.Transparent,
+                BackColor = UiStyleHelper.Current.BgSubtle,
                 Margin = new Padding(0)
             };
 
@@ -95,6 +95,7 @@ namespace SIGTool.Forms.UIs
         {
             var p = UiStyleHelper.Current;
             this.BackColor = p.BgSubtle;
+            if (_flow != null) _flow.BackColor = p.BgSubtle;
             _lblPrefix.ForeColor = p.TextPrimary;
             _lblAllClear.ForeColor = p.TextMuted;
             _bottomBorder.BackColor = p.BorderSubtle;

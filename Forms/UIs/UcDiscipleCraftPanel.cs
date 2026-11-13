@@ -442,7 +442,7 @@ namespace SIGTool.Forms.UIs
 
             double nextCost = SectBuildLogic.GetNextRecruitStoneCost(save);
             int cap = SectBuildLogic.GetMaxDiscipleCap(save.Sect);
-            _btnRecruit.Text = string.Format("招募 ({0}/{1} · {2}石)", save.Disciples.Count, cap, nextCost);
+            UiStyleHelper.SetTextIfChanged(_btnRecruit, string.Format("招募 ({0}/{1} · {2}石)", save.Disciples.Count, cap, nextCost));
 
             int cFarm = save.Disciples.Count(x => x.AssignedJob == DiscipleJob.Farm);
             int cLum = save.Disciples.Count(x => x.AssignedJob == DiscipleJob.Lumber);
@@ -484,10 +484,10 @@ namespace SIGTool.Forms.UIs
                         var d = save.Disciples[i];
                         var rCfg = SIGConfigTable.GetRealm(d.Realm);
                         var row = _gridDisciples.Rows[i];
-                        row.Cells[1].Value = EnumTextMap.RealmFullCn(d.Realm, d.SubStage, rCfg.MaxSubStage);
-                        row.Cells[2].Value = d.CurQi >= d.MaxQi - 0.1
+                        UiStyleHelper.SetCellIfChanged(row.Cells[1], EnumTextMap.RealmFullCn(d.Realm, d.SubStage, rCfg.MaxSubStage));
+                        UiStyleHelper.SetCellIfChanged(row.Cells[2], d.CurQi >= d.MaxQi - 0.1
                             ? "★已满(双击破境)"
-                            : string.Format("{0:P0}", d.CurQi / Math.Max(1.0, d.MaxQi));
+                            : string.Format("{0,4:P0}", d.CurQi / Math.Max(1.0, d.MaxQi)));
 
                         if (!(editingJobCell && _gridDisciples.CurrentCell.RowIndex == i))
                         {
@@ -526,13 +526,13 @@ namespace SIGTool.Forms.UIs
                 var rcp = SIGConfigTable.GetRecipe(ws.Building.ActiveRecipeId);
                 var row = _gridWorkshops.Rows[i];
                 row.Tag = ws.SlotIndex;
-                row.Cells[0].Value = string.Format("#{0} {1} Lv.{2}", ws.SlotIndex + 1, bCfg.GetShortLabel(), ws.Building.Level);
-                row.Cells[1].Value = rcp != null ? rcp.GetShortLabel() : "[停炉 · 双击选方]";
-                row.Cells[2].Value = rcp != null
+                UiStyleHelper.SetCellIfChanged(row.Cells[0], string.Format("#{0} {1} Lv.{2}", ws.SlotIndex + 1, bCfg.GetShortLabel(), ws.Building.Level));
+                UiStyleHelper.SetCellIfChanged(row.Cells[1], rcp != null ? rcp.GetShortLabel() : "[停炉 · 双击选方]");
+                UiStyleHelper.SetCellIfChanged(row.Cells[2], rcp != null
                     ? (ws.Building.CraftProgressSec <= 0.001
                         ? "待耗材齐备"
-                        : string.Format("{0:P0} ({1:F1}/{2:F0}s)", ws.Building.CraftProgressSec / rcp.CraftTimeSec, ws.Building.CraftProgressSec, rcp.CraftTimeSec))
-                    : "-";
+                        : string.Format("{0,4:P0} ({1,4:F1}/{2,2:F0}s)", ws.Building.CraftProgressSec / rcp.CraftTimeSec, ws.Building.CraftProgressSec, rcp.CraftTimeSec))
+                    : "-");
             }
         }
     }

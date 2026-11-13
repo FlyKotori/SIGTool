@@ -104,7 +104,7 @@ namespace SIGTool.Forms.UIs
             _lblLifespanAlert = new Label
             {
                 AutoSize = true,
-                Font = UiStyleHelper.SmallBoldFont,
+                Font = UiStyleHelper.SmallMonoBold,
                 Margin = new Padding(0, 6, 8, 0),
                 Visible = false,
                 Text = "[▲寿元将近]"
@@ -597,49 +597,53 @@ namespace SIGTool.Forms.UIs
             double curQiRate = CultivationLogic.GetQiRatePerSec(ld, save.Sect);
             double sectAura = SectBuildLogic.GetTotalSectAuraBonus(save.Sect);
 
-            _lblLeaderRealmTitle.Text = string.Format("{0}  [{1}]",
-                ld.Name, EnumTextMap.RealmFullCn(ld.Realm, ld.SubStage, rCfg.MaxSubStage));
+            UiStyleHelper.SetTextIfChanged(_lblLeaderRealmTitle, string.Format("{0}  [{1}]",
+                ld.Name, EnumTextMap.RealmFullCn(ld.Realm, ld.SubStage, rCfg.MaxSubStage)));
 
             double remainRatio = (ld.MaxLifespanYears - ld.AgeYears) / Math.Max(1.0, ld.MaxLifespanYears);
-            _lblLifespanAlert.Visible = (remainRatio < 0.15);
-            if (_lblLifespanAlert.Visible)
+            bool showLifeWarn = (remainRatio < 0.15);
+            if (_lblLifespanAlert.Visible != showLifeWarn) _lblLifespanAlert.Visible = showLifeWarn;
+            if (showLifeWarn)
             {
-                _lblLifespanAlert.Text = string.Format("[▲寿元剩{0:F1}年]", Math.Max(0, ld.MaxLifespanYears - ld.AgeYears));
+                UiStyleHelper.SetTextIfChanged(_lblLifespanAlert,
+                    string.Format("[▲寿元剩{0,5:F1}年]", Math.Max(0, ld.MaxLifespanYears - ld.AgeYears)));
             }
 
             string statsLine = string.Format("战力:{0:F0} | 攻:{1:F1} | 防:{2:F1} | 吸血:{3:P1} | 宗门灵气:+{4:P0}",
                 ld.EstimateCombatPower(), ld.BattleStats.Attack, ld.BattleStats.Defense, ld.BattleStats.LifestealRate, sectAura);
-            if (_lblCoreStatsLine.Text != statsLine) _lblCoreStatsLine.Text = statsLine;
+            UiStyleHelper.SetTextIfChanged(_lblCoreStatsLine, statsLine);
 
             _barHpMp.SetProgress(ld.BattleStats.CurHp / Math.Max(1.0, ld.BattleStats.MaxHp),
-                string.Format("气血 HP: {0:F0}/{1:F0}   |   法力 MP: {2:F0}/{3:F0}",
-                    ld.BattleStats.CurHp, ld.BattleStats.MaxHp, ld.BattleStats.CurMp, ld.BattleStats.MaxMp));
+                string.Format("气血 HP: {0}  |  法力 MP: {1}",
+                    UiStyleHelper.FormatFixedPair(ld.BattleStats.CurHp, ld.BattleStats.MaxHp, 3),
+                    UiStyleHelper.FormatFixedPair(ld.BattleStats.CurMp, ld.BattleStats.MaxMp, 3)));
 
             _barQiPool.SetProgress(ld.CurQi / Math.Max(1.0, ld.MaxQi),
-                string.Format("气海修为: {0:F0} / {1:F0}  (+{2:F1}/s)", ld.CurQi, ld.MaxQi, curQiRate));
+                string.Format("气海修为: {0}  (+{1:F1}/s)",
+                    UiStyleHelper.FormatFixedPair(ld.CurQi, ld.MaxQi, 3), curQiRate));
 
             string bonusPillId;
             double winRate = CultivationLogic.GetBreakthroughSuccessRate(ld, save.Sect, out bonusPillId);
             bool canBreak = ld.CurQi >= ld.MaxQi - 0.01;
-            _btnBreakthrough.Enabled = canBreak;
+            if (_btnBreakthrough.Enabled != canBreak) _btnBreakthrough.Enabled = canBreak;
 
             if (ld.SubStage < rCfg.MaxSubStage)
             {
-                _lblBreakthroughRate.Text = canBreak ? "★气海已满 (小境界100%)" : "小境界积蓄中 (100%)";
+                UiStyleHelper.SetTextIfChanged(_lblBreakthroughRate, canBreak ? "★气海已满 (小境界100%)" : "小境界积蓄中 (100%)");
             }
             else
             {
                 var pCfg = SIGConfigTable.GetItem(bonusPillId);
-                _lblBreakthroughRate.Text = string.Format("大境界瓶颈 · 成率 {0:P0}{1}",
-                    winRate, pCfg != null ? string.Format(" (含{0})", pCfg.GetShortLabel()) : "");
+                UiStyleHelper.SetTextIfChanged(_lblBreakthroughRate, string.Format("大境界瓶颈 · 成率 {0:P0}{1}",
+                    winRate, pCfg != null ? string.Format(" (含{0})", pCfg.GetShortLabel()) : ""));
             }
 
             var wCfg = SIGConfigTable.GetItem(ld.EquippedWeaponId);
             var aCfg = SIGConfigTable.GetItem(ld.EquippedArmorId);
             var tCfg = SIGConfigTable.GetItem(ld.EquippedTalismanId);
-            _btnWeaponSlot.Text = string.Format("飞剑：{0}", wCfg != null ? string.Format("{0}  (攻+{1}/速+{2})", wCfg.NameCn, wCfg.AtkBonus, wCfg.SpeedBonus) : "[未佩戴 · 双击选装 / 右键快换]");
-            _btnArmorSlot.Text = string.Format("宝衣：{0}", aCfg != null ? string.Format("{0}  (防+{1}/血+{2})", aCfg.NameCn, aCfg.DefBonus, aCfg.HpBonus) : "[未穿戴 · 双击选装 / 右键快换]");
-            _btnTalismanSlot.Text = string.Format("法宝：{0}", tCfg != null ? string.Format("{0}  (主动技:{1})", tCfg.NameCn, tCfg.ActiveSkillName) : "[未祭炼 · 双击选装 / 右键快换]");
+            UiStyleHelper.SetTextIfChanged(_btnWeaponSlot, string.Format("飞剑：{0}", wCfg != null ? string.Format("{0}  (攻+{1}/速+{2})", wCfg.NameCn, wCfg.AtkBonus, wCfg.SpeedBonus) : "[未佩戴 · 双击选装 / 右键快换]"));
+            UiStyleHelper.SetTextIfChanged(_btnArmorSlot, string.Format("宝衣：{0}", aCfg != null ? string.Format("{0}  (防+{1}/血+{2})", aCfg.NameCn, aCfg.DefBonus, aCfg.HpBonus) : "[未穿戴 · 双击选装 / 右键快换]"));
+            UiStyleHelper.SetTextIfChanged(_btnTalismanSlot, string.Format("法宝：{0}", tCfg != null ? string.Format("{0}  (主动技:{1})", tCfg.NameCn, tCfg.ActiveSkillName) : "[未祭炼 · 双击选装 / 右键快换]"));
 
             for (int i = 0; i < 3; i++)
             {

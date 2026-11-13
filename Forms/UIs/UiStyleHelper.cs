@@ -430,7 +430,7 @@ namespace SIGTool.Forms.UIs
 
         public static FlowLayoutPanel CreateCleanToolbarStrip(DockStyle dock = DockStyle.Top, int height = 30)
         {
-            return new FlowLayoutPanel
+            var flp = new FlowLayoutPanel
             {
                 Dock = dock,
                 Height = height,
@@ -438,8 +438,10 @@ namespace SIGTool.Forms.UIs
                 AutoScroll = false,
                 Margin = new Padding(0),
                 Padding = new Padding(1, 1, 1, 1),
-                BackColor = Color.Transparent
+                BackColor = Current.BgWindow
             };
+            EnableDoubleBuffer(flp);
+            return flp;
         }
 
         public static Color GetElementColor(ElementType elem)
@@ -607,6 +609,10 @@ namespace SIGTool.Forms.UIs
                 tb.BackColor = p.BgCard;
                 tb.ForeColor = p.TextPrimary;
             }
+            else if (root is FlowLayoutPanel)
+            {
+                root.BackColor = p.BgWindow;
+            }
             else if (root is TreeView)
             {
                 var tv = (TreeView)root;
@@ -675,6 +681,68 @@ namespace SIGTool.Forms.UIs
             if (ctrl == null) return;
             PropertyInfo prop = typeof(Control).GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
             if (prop != null) prop.SetValue(ctrl, true, null);
+        }
+
+        /// <summary>
+        /// UI 防跳字协议：计算非负整数显示所需字符位数（至少 minDigits 位）
+        /// </summary>
+        public static int DigitWidth(double maxVal, int minDigits = 1)
+        {
+            long v = (long)Math.Max(0.0, Math.Round(Math.Abs(maxVal)));
+            int d = 1;
+            while (v >= 10)
+            {
+                v /= 10;
+                d++;
+            }
+            return Math.Max(minDigits, d);
+        }
+
+        /// <summary>
+        /// UI 防跳字协议：按固定字符槽宽右对齐整数（配合等宽字体可保证数值增减时像素宽度恒定不变）
+        /// </summary>
+        public static string PadInt(double val, int width)
+        {
+            long v = (long)Math.Round(val);
+            return v.ToString().PadLeft(Math.Max(1, width), ' ');
+        }
+
+        /// <summary>
+        /// UI 防跳字协议：按上限位数固定“当前/上限”总槽宽（如 " 605/1220"），彻底消除回血/充气时右侧文字横跳
+        /// </summary>
+        public static string FormatFixedPair(double cur, double max, int minDigits = 3)
+        {
+            int w = DigitWidth(Math.Max(cur, max), minDigits);
+            string curStr = ((long)Math.Round(cur)).ToString().PadLeft(w, ' ');
+            string maxStr = ((long)Math.Round(max)).ToString().PadLeft(w, ' ');
+            return curStr + "/" + maxStr;
+        }
+
+        /// <summary>
+        /// UI 防跳字协议：仅在文本实质变化时写入 Control.Text，避免无意义重排与重绘
+        /// </summary>
+        public static void SetTextIfChanged(Control ctrl, string newText)
+        {
+            if (ctrl == null) return;
+            string target = newText ?? "";
+            if (!string.Equals(ctrl.Text, target, StringComparison.Ordinal))
+            {
+                ctrl.Text = target;
+            }
+        }
+
+        /// <summary>
+        /// UI 防跳字协议：仅在单元格显示文本实质变化时更新 DataGridViewCell.Value，抑制 10Hz 整行闪烁
+        /// </summary>
+        public static void SetCellIfChanged(DataGridViewCell cell, string newText)
+        {
+            if (cell == null) return;
+            string target = newText ?? "";
+            string cur = cell.Value != null ? cell.Value.ToString() : "";
+            if (!string.Equals(cur, target, StringComparison.Ordinal))
+            {
+                cell.Value = target;
+            }
         }
 
         public static string FormatNum(double val)
@@ -938,10 +1006,96 @@ namespace SIGTool.Forms.UIs
 
             if (!string.IsNullOrEmpty(_overlayText))
             {
-                TextRenderer.DrawText(g, _overlayText, UiStyleHelper.BoldFont, rect,
+                TextRenderer.DrawText(g, _overlayText, UiStyleHelper.SmallMonoBold, rect,
                     p.GaugeOverlayText,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
             }
         }
     }
+
+    /// <summary>
+    /// 架构级零闪烁双缓冲状态横幅控件：
+    /// 替代高频刷新区域内的原生 Label（不触发父容器 PerformLayout、不使用 Color.Transparent、支持等宽字体无抖动重绘）
+    /// </summary>
+    public class DoubleBufferedStatusLabel : Panel, IThemeableView
+    {
+        private string _displayText = "";
+        private readonly bool _hasBorder;
+        private readonly bool _useCardBg;
+
+        public ContentAlignment TextAlign { get; set; } = ContentAlignment.MiddleLeft;
+
+        public DoubleBufferedStatusLabel(Font font = null, bool hasBorder = true, bool useCardBg = true)
+        {
+            _hasBorder = hasBorder;
+            _useCardBg = useCardBg;
+            this.DoubleBuffered = true;
+            this.ResizeRedraw = true;
+            this.Font = font ?? UiStyleHelper.SmallMonoReg;
+            this.Padding = new Padding(6, 4, 6, 4);
+            ApplyTheme();
+        }
+
+        public override string Text
+        {
+            get { return _displayText; }
+            set
+            {
+                string next = value ?? "";
+                if (string.Equals(_displayText, next, StringComparison.Ordinal)) return;
+                _displayText = next;
+                Invalidate();
+            }
+        }
+
+        public void ApplyTheme()
+        {
+            var p = UiStyleHelper.Current;
+            this.BackColor = _useCardBg ? p.BgCard : p.BgWindow;
+            this.ForeColor = _useCardBg ? p.TextPrimary : p.TextMuted;
+            Invalidate();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            var g = e.Graphics;
+            var rect = this.ClientRectangle;
+            if (rect.Width <= 2 || rect.Height <= 2) return;
+
+            var p = UiStyleHelper.Current;
+            Color bg = _useCardBg ? p.BgCard : this.BackColor;
+            using (var bgBrush = new SolidBrush(bg))
+            {
+                g.FillRectangle(bgBrush, rect);
+            }
+
+            if (_hasBorder)
+            {
+                using (var pen = new Pen(p.BorderSubtle))
+                {
+                    g.DrawRectangle(pen, 0, 0, rect.Width - 1, rect.Height - 1);
+                }
+            }
+
+            if (string.IsNullOrEmpty(_displayText)) return;
+
+            var inner = new Rectangle(
+                this.Padding.Left,
+                this.Padding.Top,
+                Math.Max(2, rect.Width - this.Padding.Horizontal),
+                Math.Max(2, rect.Height - this.Padding.Vertical));
+
+            TextFormatFlags flags = TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis | TextFormatFlags.WordBreak;
+            if (TextAlign == ContentAlignment.MiddleLeft || TextAlign == ContentAlignment.MiddleCenter)
+            {
+                if (!_displayText.Contains("\n"))
+                {
+                    flags = TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter;
+                }
+            }
+            TextRenderer.DrawText(g, _displayText, this.Font, inner, this.ForeColor, flags);
+        }
+    }
+
 }

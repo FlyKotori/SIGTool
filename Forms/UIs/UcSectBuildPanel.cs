@@ -23,7 +23,7 @@ namespace SIGTool.Forms.UIs
         private readonly List<InteractiveSlotButton> _slotButtons = new List<InteractiveSlotButton>(24);
         private int _selectedSlotIndex = 0;
 
-        private Label _lblSlotSummary;
+        private DoubleBufferedStatusLabel _lblSlotSummary;
         private UcCompactTileGrid _buildTileGrid;
         private ContextMenuStrip _slotContextMenu;
 
@@ -181,11 +181,9 @@ namespace SIGTool.Forms.UIs
             tblRight.RowStyles.Add(new RowStyle(SizeType.Absolute, 66F));
             tblRight.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            _lblSlotSummary = new Label
+            _lblSlotSummary = new DoubleBufferedStatusLabel(UiStyleHelper.MonoFont, hasBorder: true, useCardBg: true)
             {
                 Dock = DockStyle.Fill,
-                Font = UiStyleHelper.MonoFont,
-                BorderStyle = BorderStyle.FixedSingle,
                 Padding = new Padding(6, 4, 6, 4),
                 Margin = new Padding(0, 0, 0, 6),
                 Text = "地块详情..."
@@ -399,7 +397,7 @@ namespace SIGTool.Forms.UIs
                     if (slot.Building.IsUnderConstruction)
                     {
                         double pct = slot.Building.BuildProgressSec / Math.Max(0.1, slot.Building.BuildTotalSec);
-                        text = string.Format("#{0} [营造]{1}\nL{2} {3:P0}", i + 1, bShort, slot.Building.Level, pct);
+                        text = string.Format("#{0} [营造]{1}\nL{2} {3,4:P0}", i + 1, bShort, slot.Building.Level, pct);
                         bg = p.SlotConstructBg;
                         fg = p.SlotConstructFg;
                     }
@@ -434,7 +432,7 @@ namespace SIGTool.Forms.UIs
                 double eff = SectBuildLogic.GetSlotEfficiencyMultiplier(selSlot, bCfg);
                 if (selSlot.Building.IsUnderConstruction)
                 {
-                    sbSlot.AppendFormat("驻地：【{0} Lv.{1}】 施工进度 {2:F1}s / {3:F1}s",
+                    sbSlot.AppendFormat("驻地：【{0} Lv.{1}】 施工进度 {2,5:F1}s / {3,5:F1}s",
                         bCfg.NameCn, selSlot.Building.Level, selSlot.Building.BuildProgressSec, selSlot.Building.BuildTotalSec);
                 }
                 else if (selSlot.Building.Level < bCfg.MaxLevel)

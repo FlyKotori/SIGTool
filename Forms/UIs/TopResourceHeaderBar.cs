@@ -8,6 +8,127 @@ using SIGTool.Modules.Logics;
 
 namespace SIGTool.Forms.UIs
 {
+    /// <summary>
+    /// 顶栏第一行左侧双缓冲定宽分槽铭牌（v0.9.1 架构级防跳字组件）：
+    /// • 将【宗门仙历】、【门人】、【结界】、【兽潮】拆分为独立像素锚定槽位；
+    /// • 所有动态数字统一使用等宽字体 SmallMonoBold + 按上限位数定宽补齐（FormatFixedPair / PadInt）；
+    /// • 结界回血或门人变动时，各个槽位的起始 X 坐标与像素宽度 100% 恒定，彻底根除右侧文字高频横跳与透明背景闪烁。
+    /// </summary>
+    internal sealed class UcHeaderStatusPlaque : Panel
+    {
+        private string _sectTitle = "【太虚云隐宗 Lv.1】";
+        private string _dateText = "仙历第 1 年 1 月 (春)";
+        private string _discVal = " 2/ 3";
+        private string _barrierVal = "600/600";
+        private string _raidVal = "12月";
+        private string _signature = "";
+
+        public UcHeaderStatusPlaque()
+        {
+            this.DoubleBuffered = true;
+            this.ResizeRedraw = true;
+            this.Dock = DockStyle.Fill;
+            this.Margin = new Padding(2, 0, 6, 0);
+        }
+
+        public void UpdateMetrics(
+            string sectName,
+            int sectLv,
+            string dateText,
+            int discCount,
+            int discCap,
+            double barrierCur,
+            double barrierMax,
+            int monthsUntilRaid)
+        {
+            string sTitle = string.Format("【{0} Lv.{1}】", sectName, sectLv);
+            string dVal = UiStyleHelper.FormatFixedPair(discCount, discCap, 2);
+            string bVal = UiStyleHelper.FormatFixedPair(barrierCur, barrierMax, 3);
+            string rVal = UiStyleHelper.PadInt(monthsUntilRaid, 2) + "月";
+
+            string sig = string.Concat(sTitle, "|", dateText, "|", dVal, "|", bVal, "|", rVal);
+            if (string.Equals(_signature, sig, StringComparison.Ordinal)) return;
+
+            _signature = sig;
+            _sectTitle = sTitle;
+            _dateText = dateText;
+            _discVal = dVal;
+            _barrierVal = bVal;
+            _raidVal = rVal;
+            Invalidate();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            var g = e.Graphics;
+            var rect = this.ClientRectangle;
+            if (rect.Width <= 4 || rect.Height <= 4) return;
+
+            var p = UiStyleHelper.Current;
+            using (var bgBrush = new SolidBrush(p.BgHeader))
+            {
+                g.FillRectangle(bgBrush, rect);
+            }
+
+            Color fgMain = p.TextHeader;
+            Color fgSub = p.TextHeaderSub;
+            Color sepCol = p.BorderStrong;
+
+            int x = 0;
+            int h = rect.Height;
+            var flags = TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding;
+
+            // 1. 宗门名号 + 仙历年月（固定年月字符串宽度在同一月内完全不变）
+            Size szSect = TextRenderer.MeasureText(g, _sectTitle, UiStyleHelper.HeaderFont, new Size(rect.Width, h), flags);
+            TextRenderer.DrawText(g, _sectTitle, UiStyleHelper.HeaderFont, new Rectangle(x, 0, szSect.Width + 2, h), fgMain, flags);
+            x += szSect.Width + 4;
+
+            // 仙历月份固定补齐为 2 位宽显示，防止 9月 -> 10月 跳动
+            Size szDate = TextRenderer.MeasureText(g, _dateText, UiStyleHelper.SmallBoldFont, new Size(rect.Width, h), flags);
+            if (x + szDate.Width > rect.Width) return;
+            TextRenderer.DrawText(g, _dateText, UiStyleHelper.SmallBoldFont, new Rectangle(x, 0, szDate.Width + 2, h), fgSub, flags);
+            x += szDate.Width + 10;
+
+            // 2. 定宽分槽绘制：门人 | 结界 | 兽潮
+            x = DrawMetricSlot(g, x, h, rect.Width, "门人:", _discVal, fgSub, fgMain, sepCol, flags);
+            x = DrawMetricSlot(g, x, h, rect.Width, "结界:", _barrierVal, fgSub, fgMain, sepCol, flags);
+            DrawMetricSlot(g, x, h, rect.Width, "兽潮:", _raidVal, fgSub, fgMain, sepCol, flags);
+        }
+
+        private static int DrawMetricSlot(
+            Graphics g,
+            int startX,
+            int height,
+            int maxWidth,
+            string label,
+            string monoValue,
+            Color labelColor,
+            Color valColor,
+            Color sepColor,
+            TextFormatFlags flags)
+        {
+            if (startX + 24 >= maxWidth) return maxWidth;
+
+            using (var sepPen = new Pen(sepColor))
+            {
+                g.DrawLine(sepPen, startX, 7, startX, height - 7);
+            }
+            int x = startX + 8;
+
+            Size szLbl = TextRenderer.MeasureText(g, label, UiStyleHelper.SmallBoldFont, new Size(200, height), flags);
+            if (x + szLbl.Width >= maxWidth) return maxWidth;
+            TextRenderer.DrawText(g, label, UiStyleHelper.SmallBoldFont, new Rectangle(x, 0, szLbl.Width + 2, height), labelColor, flags);
+            x += szLbl.Width + 2;
+
+            Size szVal = TextRenderer.MeasureText(g, monoValue, UiStyleHelper.SmallMonoBold, new Size(240, height), flags);
+            int availW = Math.Max(0, maxWidth - x);
+            if (availW <= 4) return maxWidth;
+            TextRenderer.DrawText(g, monoValue, UiStyleHelper.SmallMonoBold, new Rectangle(x, 0, Math.Min(szVal.Width + 2, availW), height), valColor, flags);
+            return x + szVal.Width + 10;
+        }
+    }
+
     internal sealed class UcResourceCell : Panel
     {
         private readonly ResourceType _resourceType;
@@ -95,7 +216,6 @@ namespace SIGTool.Forms.UIs
 
             if (p.Mode == UiThemeMode.CleanOfficeLight)
             {
-                // 纯灰度白底：严格 R == G == B
                 cellBg = _isHovered ? Color.FromArgb(230, 230, 230) : Color.FromArgb(244, 244, 244);
                 cellBorder = _isHovered ? Color.FromArgb(90, 90, 90) : Color.FromArgb(204, 204, 204);
                 rateFg = _rateSign > 0 ? Color.FromArgb(32, 32, 32)
@@ -103,7 +223,6 @@ namespace SIGTool.Forms.UIs
             }
             else if (p.Mode == UiThemeMode.MinimalDarkGray)
             {
-                // 纯灰度深灰：严格 R == G == B
                 cellBg = _isHovered ? Color.FromArgb(48, 48, 48) : Color.FromArgb(32, 32, 32);
                 cellBorder = _isHovered ? Color.FromArgb(156, 156, 156) : Color.FromArgb(64, 64, 64);
                 rateFg = _rateSign > 0 ? Color.FromArgb(212, 212, 212)
@@ -149,7 +268,7 @@ namespace SIGTool.Forms.UIs
     }
 
     /// <summary>
-    /// 顶部全局状态与快捷控制栏（v0.6：紧凑小按钮 + 右侧锚定防截断 TableLayoutPanel，确保【新局】等全部按钮在任意缩放下完整显示，无彩色 Emoji）
+    /// 顶部全局状态与快捷控制栏（v0.9.1：全双缓冲不透明布局容器 + 定宽分槽铭牌 UcHeaderStatusPlaque，彻底消除结界回血等高频刷新跳字）
     /// </summary>
     public class TopResourceHeaderBar : UserControl, IThemeableView
     {
@@ -161,7 +280,12 @@ namespace SIGTool.Forms.UIs
         private readonly Action _onOpenBossSettings;
         private readonly Action _onOpenDevConsole;
 
-        private Label _lblSectAndDate;
+        private TableLayoutPanel _topRow;
+        private FlowLayoutPanel _topBtnStrip;
+        private Panel _secondRow;
+        private FlowLayoutPanel _pnlDesktopTools;
+        private TableLayoutPanel _tblResGrid;
+        private UcHeaderStatusPlaque _statusPlaque;
         private Panel _bottomDivider;
 
         private Button _btnPause;
@@ -204,39 +328,30 @@ namespace SIGTool.Forms.UIs
 
         private void BuildLayout()
         {
-            // 第一行采用左自适应省略 + 右侧紧凑按钮列，彻底杜绝【新局】被挤出屏幕
-            var topRow = new TableLayoutPanel
+            _topRow = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
                 Height = 30,
                 ColumnCount = 2,
                 RowCount = 1,
-                Margin = new Padding(0),
-                BackColor = Color.Transparent
+                Margin = new Padding(0)
             };
-            topRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            topRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-            topRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            UiStyleHelper.EnableDoubleBuffer(_topRow);
+            _topRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _topRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            _topRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            _lblSectAndDate = new Label
-            {
-                Dock = DockStyle.Fill,
-                AutoEllipsis = true,
-                Font = UiStyleHelper.HeaderFont,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Margin = new Padding(2, 0, 6, 0),
-                Text = "【太虚云隐宗 Lv.1】 仙历第 1 年 1 月"
-            };
+            _statusPlaque = new UcHeaderStatusPlaque();
 
-            var topBtnStrip = new FlowLayoutPanel
+            _topBtnStrip = new FlowLayoutPanel
             {
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 WrapContents = false,
                 Dock = DockStyle.Fill,
-                Margin = new Padding(0, 2, 0, 0),
-                BackColor = Color.Transparent
+                Margin = new Padding(0, 2, 0, 0)
             };
+            UiStyleHelper.EnableDoubleBuffer(_topBtnStrip);
 
             _btnPause = UiStyleHelper.CreateButton("0x", (s, e) =>
             {
@@ -331,33 +446,33 @@ namespace SIGTool.Forms.UIs
             UiStyleHelper.SetToolTip(btnReloadCfg, "免重启热加载 Configs/SIGConfig.json 配表 — 快捷键: Ctrl+R");
             UiStyleHelper.SetToolTip(btnReset, "重置当前槽位进度并重新创立宗门（保留皮肤与分栏设置）");
 
-            topBtnStrip.Controls.AddRange(new Control[]
+            _topBtnStrip.Controls.AddRange(new Control[]
             {
                 _btnPause, _btn1x, _btn2x, _btn5x,
                 btnOpenVault, btnOpenCombat,
                 _cmbSlot, btnSave, btnLoad, btnReloadCfg, btnReset
             });
 
-            topRow.Controls.Add(_lblSectAndDate, 0, 0);
-            topRow.Controls.Add(topBtnStrip, 1, 0);
+            _topRow.Controls.Add(_statusPlaque, 0, 0);
+            _topRow.Controls.Add(_topBtnStrip, 1, 0);
 
-            var secondRow = new Panel
+            _secondRow = new Panel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(0, 1, 0, 3),
-                BackColor = Color.Transparent
+                Padding = new Padding(0, 1, 0, 3)
             };
+            UiStyleHelper.EnableDoubleBuffer(_secondRow);
 
-            var pnlDesktopTools = new FlowLayoutPanel
+            _pnlDesktopTools = new FlowLayoutPanel
             {
                 Dock = DockStyle.Right,
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 WrapContents = false,
                 FlowDirection = FlowDirection.LeftToRight,
-                BackColor = Color.Transparent,
                 Padding = new Padding(6, 5, 0, 0)
             };
+            UiStyleHelper.EnableDoubleBuffer(_pnlDesktopTools);
 
             _btnCycleTheme = UiStyleHelper.CreateButton("皮肤:标准暗蓝", (s, e) =>
             {
@@ -383,32 +498,31 @@ namespace SIGTool.Forms.UIs
             UiStyleHelper.SetToolTip(_btnBossSettings, "设置系统托盘驻留与全局双向隐藏/唤起老板键");
             UiStyleHelper.SetToolTip(btnDevConsole, "打开开发者数值平衡测试台（时间快进 / 资源注入 / 千场模拟） — 快捷键: F12");
 
-            pnlDesktopTools.Controls.AddRange(new Control[] { _btnCycleTheme, _btnStealthHide, _btnBossSettings, btnDevConsole });
+            _pnlDesktopTools.Controls.AddRange(new Control[] { _btnCycleTheme, _btnStealthHide, _btnBossSettings, btnDevConsole });
 
-            var tblResGrid = new TableLayoutPanel
+            _tblResGrid = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 7,
                 RowCount = 1,
-                Margin = new Padding(0),
-                BackColor = Color.Transparent
+                Margin = new Padding(0)
             };
-            UiStyleHelper.EnableDoubleBuffer(tblResGrid);
-            tblResGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            UiStyleHelper.EnableDoubleBuffer(_tblResGrid);
+            _tblResGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             float[] weights = { 16.0f, 15.0f, 15.0f, 15.0f, 15.0f, 12.0f, 12.0f };
             for (int c = 0; c < 7; c++)
             {
-                tblResGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, weights[c]));
+                _tblResGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, weights[c]));
             }
 
-            AddResCell(tblResGrid, 0, ResourceType.SpiritStone, "灵石", true);
-            AddResCell(tblResGrid, 1, ResourceType.SpiritWood, "灵木", true);
-            AddResCell(tblResGrid, 2, ResourceType.SpiritOre, "玄铁", true);
-            AddResCell(tblResGrid, 3, ResourceType.SpiritFood, "灵谷", true);
-            AddResCell(tblResGrid, 4, ResourceType.SpiritHerb, "灵草", true);
-            AddResCell(tblResGrid, 5, ResourceType.MonsterCore, "妖丹", false);
-            AddResCell(tblResGrid, 6, ResourceType.SectReputation, "声望", false);
+            AddResCell(_tblResGrid, 0, ResourceType.SpiritStone, "灵石", true);
+            AddResCell(_tblResGrid, 1, ResourceType.SpiritWood, "灵木", true);
+            AddResCell(_tblResGrid, 2, ResourceType.SpiritOre, "玄铁", true);
+            AddResCell(_tblResGrid, 3, ResourceType.SpiritFood, "灵谷", true);
+            AddResCell(_tblResGrid, 4, ResourceType.SpiritHerb, "灵草", true);
+            AddResCell(_tblResGrid, 5, ResourceType.MonsterCore, "妖丹", false);
+            AddResCell(_tblResGrid, 6, ResourceType.SectReputation, "声望", false);
 
             _bottomDivider = new Panel
             {
@@ -416,11 +530,11 @@ namespace SIGTool.Forms.UIs
                 Height = 1
             };
 
-            secondRow.Controls.Add(tblResGrid);
-            secondRow.Controls.Add(pnlDesktopTools);
+            _secondRow.Controls.Add(_tblResGrid);
+            _secondRow.Controls.Add(_pnlDesktopTools);
 
-            this.Controls.Add(secondRow);
-            this.Controls.Add(topRow);
+            this.Controls.Add(_secondRow);
+            this.Controls.Add(_topRow);
             this.Controls.Add(_bottomDivider);
         }
 
@@ -438,13 +552,12 @@ namespace SIGTool.Forms.UIs
 
         public void UpdateDesktopUtilityLabels(string hotkeyLabel, bool hotkeyRegisteredOk)
         {
-            string themeTitle = "皮肤:" + UiStyleHelper.GetThemeShortCn(UiStyleHelper.Current.Mode);
-            if (_btnCycleTheme.Text != themeTitle) _btnCycleTheme.Text = themeTitle;
+            UiStyleHelper.SetTextIfChanged(_btnCycleTheme, "皮肤:" + UiStyleHelper.GetThemeShortCn(UiStyleHelper.Current.Mode));
 
             string hideTitle = (!ClientSettingsService.Current.EnableBossHotkey || hotkeyRegisteredOk)
                 ? "隐藏"
                 : "隐藏(热键冲突)";
-            if (_btnStealthHide.Text != hideTitle) _btnStealthHide.Text = hideTitle;
+            UiStyleHelper.SetTextIfChanged(_btnStealthHide, hideTitle);
 
             string hideTip = !ClientSettingsService.Current.EnableBossHotkey
                 ? "立即隐藏窗口至系统托盘静默挂机（全局老板键当前已关闭）"
@@ -458,7 +571,16 @@ namespace SIGTool.Forms.UIs
         {
             var p = UiStyleHelper.Current;
             this.BackColor = p.BgHeader;
-            if (_lblSectAndDate != null) _lblSectAndDate.ForeColor = p.TextHeader;
+            if (_topRow != null) _topRow.BackColor = p.BgHeader;
+            if (_topBtnStrip != null) _topBtnStrip.BackColor = p.BgHeader;
+            if (_secondRow != null) _secondRow.BackColor = p.BgHeader;
+            if (_pnlDesktopTools != null) _pnlDesktopTools.BackColor = p.BgHeader;
+            if (_tblResGrid != null) _tblResGrid.BackColor = p.BgHeader;
+            if (_statusPlaque != null)
+            {
+                _statusPlaque.BackColor = p.BgHeader;
+                _statusPlaque.Invalidate();
+            }
             if (_bottomDivider != null) _bottomDivider.BackColor = p.BorderStrong;
             foreach (var kv in _resCells)
             {
@@ -475,12 +597,22 @@ namespace SIGTool.Forms.UIs
             RefreshSpeedHighlight();
 
             int discCap = SectBuildLogic.GetMaxDiscipleCap(save.Sect);
-            string sectText = string.Format("【{0} Lv.{1}】{2} | 门人:{3}/{4} | 结界:{5:F0}/{6:F0} | 兽潮:{7}月",
-                save.Sect.SectName, save.Sect.SectLevel, save.GetImmortalDateText(),
-                save.Disciples.Count, discCap,
-                save.Sect.BarrierCurHp, save.Sect.BarrierMaxHp,
+            string seasonCn = "春";
+            if (save.SIGMonth >= 4 && save.SIGMonth <= 6) seasonCn = "夏";
+            else if (save.SIGMonth >= 7 && save.SIGMonth <= 9) seasonCn = "秋";
+            else if (save.SIGMonth >= 10) seasonCn = "冬";
+            // 月份采用固定 2 位宽显示，避免 9月 -> 10月 时右侧槽位微移
+            string fixedDate = string.Format("仙历第{0,3}年{1,2}月({2})", save.SIGYear, save.SIGMonth, seasonCn);
+
+            _statusPlaque.UpdateMetrics(
+                save.Sect.SectName,
+                save.Sect.SectLevel,
+                fixedDate,
+                save.Disciples.Count,
+                discCap,
+                save.Sect.BarrierCurHp,
+                save.Sect.BarrierMaxHp,
                 save.Combat.MonthsUntilNextRaid);
-            if (_lblSectAndDate.Text != sectText) _lblSectAndDate.Text = sectText;
 
             var prod = SectBuildLogic.CalculateResourceRatesPerSec(save);
             var drain = SectBuildLogic.CalculateResourceDrainPerSec(save);

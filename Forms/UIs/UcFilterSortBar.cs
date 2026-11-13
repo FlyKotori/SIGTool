@@ -38,7 +38,7 @@ namespace SIGTool.Forms.UIs
             this.WrapContents = false;
             this.Margin = new Padding(2, 0, 4, 0);
             this.Padding = new Padding(0);
-            this.BackColor = Color.Transparent;
+            this.BackColor = UiStyleHelper.Current.BgWindow;
 
             _lblTitle = new Label
             {
@@ -122,7 +122,7 @@ namespace SIGTool.Forms.UIs
             this.WrapContents = false;
             this.Margin = new Padding(0);
             this.Padding = new Padding(1, 1, 1, 1);
-            this.BackColor = Color.Transparent;
+            this.BackColor = UiStyleHelper.Current.BgWindow;
 
             if (groupOptions != null && groupOptions.Count > 0)
             {
@@ -210,6 +210,7 @@ namespace SIGTool.Forms.UIs
         public void ApplyTheme()
         {
             var p = UiStyleHelper.Current;
+            this.BackColor = p.BgWindow;
             _lblSearch.ForeColor = p.TextMuted;
             _txtKeyword.BackColor = p.BgCard;
             _txtKeyword.ForeColor = p.TextPrimary;

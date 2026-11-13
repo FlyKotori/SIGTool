@@ -43,6 +43,7 @@ namespace SIGTool.Modules.Core
 
             if (isNewSIG)
             {
+                Save.Sect.BarrierCurHp = Save.Sect.BarrierMaxHp;
                 Save.Leader.BattleStats.CurHp = Save.Leader.BattleStats.MaxHp;
                 Save.Leader.BattleStats.CurMp = Save.Leader.BattleStats.MaxMp;
                 foreach (var d in Save.Disciples)
@@ -125,6 +126,7 @@ namespace SIGTool.Modules.Core
                 Save = SaveLoadService.CreateNewSIGSave();
                 SectBuildLogic.RefreshSectDerivedCaps(Save);
                 CultivationLogic.RecalculateAllCharacters(Save);
+                Save.Sect.BarrierCurHp = Save.Sect.BarrierMaxHp;
                 Save.Leader.BattleStats.CurHp = Save.Leader.BattleStats.MaxHp;
                 Save.Leader.BattleStats.CurMp = Save.Leader.BattleStats.MaxMp;
             }

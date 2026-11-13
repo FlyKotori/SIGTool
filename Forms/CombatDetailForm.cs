@@ -17,7 +17,7 @@ namespace SIGTool.Forms
     {
         private readonly SIGEngine _engine;
         private readonly InteractiveSlotButton[] _btnCombatPills = new InteractiveSlotButton[3];
-        private Label _lblStatus;
+        private DoubleBufferedStatusLabel _lblStatus;
         private TextBox _txtSnapshot;
         private TextBox _txtBattleLogs;
         private UcStatusFeedbackStrip _localStatusStrip;
@@ -107,12 +107,11 @@ namespace SIGTool.Forms
                 RefreshView();
             }, UiButtonRole.Default, true));
 
-            _lblStatus = new Label
+            _lblStatus = new DoubleBufferedStatusLabel(UiStyleHelper.SmallMonoBold, hasBorder: false, useCardBg: false)
             {
                 Dock = DockStyle.Top,
                 Height = 26,
                 Padding = new Padding(8, 3, 8, 2),
-                Font = UiStyleHelper.BoldFont,
                 Text = "当前战况加载中..."
             };
 
@@ -285,11 +284,13 @@ namespace SIGTool.Forms
                 if (_btnCombatPills[i].Text != txt) _btnCombatPills[i].Text = txt;
             }
 
-            _lblStatus.Text = cs.IsInBattle
-                ? string.Format("■ 【{0}】 波次 {1}/{2} | 回合:{3} | 护山结界:{4:F0}/{5:F0}",
-                    cs.StageName, cs.CurrentWave, cs.TotalWaves, cs.TurnCount,
-                    save.Sect.BarrierCurHp, save.Sect.BarrierMaxHp)
+            string nextStatus = cs.IsInBattle
+                ? string.Format("■ 【{0}】 波次 {1}/{2} | 回合:{3} | 护山结界:{4}",
+                    cs.StageName, cs.CurrentWave, cs.TotalWaves,
+                    UiStyleHelper.PadInt(cs.TurnCount, 3),
+                    UiStyleHelper.FormatFixedPair(save.Sect.BarrierCurHp, save.Sect.BarrierMaxHp, 3))
                 : string.Format("休整待命中（累计胜场 {0}）", cs.TotalVictories);
+            UiStyleHelper.SetTextIfChanged(_lblStatus, nextStatus);
 
             var snap = new StringBuilder();
             snap.AppendLine("【我方参战】");

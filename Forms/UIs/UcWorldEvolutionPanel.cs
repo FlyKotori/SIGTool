@@ -28,14 +28,14 @@ namespace SIGTool.Forms.UIs
         private string _activeEncounterUid = "";
 
         // 左下：九州岁运与周边宗门演化
-        private Label _lblTrendBanner;
+        private DoubleBufferedStatusLabel _lblTrendBanner;
         private DataGridView _gridFactions;
         private ContextMenuStrip _factionMenu;
         private string _lastFactionSig = "";
 
         // 右侧：九州浮动坊市
         private UcBatchStepBar _batchStepBar;
-        private Label _lblMarketHeader;
+        private DoubleBufferedStatusLabel _lblMarketHeader;
         private UcCompactTileGrid _marketTileGrid;
 
         public UcWorldEvolutionPanel(SIGEngine engine)
@@ -179,11 +179,9 @@ namespace SIGTool.Forms.UIs
             tblFac.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
             tblFac.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            _lblTrendBanner = new Label
+            _lblTrendBanner = new DoubleBufferedStatusLabel(UiStyleHelper.SmallMonoReg, hasBorder: true, useCardBg: true)
             {
                 Dock = DockStyle.Fill,
-                Font = UiStyleHelper.SmallMonoReg,
-                BorderStyle = BorderStyle.FixedSingle,
                 Padding = new Padding(6, 4, 6, 4),
                 Margin = new Padding(0, 0, 0, 6),
                 Text = "今岁天象读取中..."
@@ -244,11 +242,12 @@ namespace SIGTool.Forms.UIs
             _batchStepBar = new UcBatchStepBar("交易批量:");
             UiStyleHelper.SetToolTip(_batchStepBar, "控制双击采购或右键/Delete抛售时的单次交易批数（自动按灵石或库存上限截断）");
 
-            _lblMarketHeader = new Label
+            _lblMarketHeader = new DoubleBufferedStatusLabel(UiStyleHelper.SmallMonoReg, hasBorder: false, useCardBg: false)
             {
-                AutoSize = true,
-                Font = UiStyleHelper.SmallMonoReg,
-                Margin = new Padding(8, 5, 0, 0),
+                AutoSize = false,
+                Size = new Size(390, 24),
+                Padding = new Padding(4, 0, 0, 0),
+                Margin = new Padding(6, 2, 0, 0),
                 Text = "灵石: 0 | 下季调价: 余 3 月"
             };
             barMkt.Controls.AddRange(new Control[] { _batchStepBar, _lblMarketHeader });
@@ -568,8 +567,8 @@ namespace SIGTool.Forms.UIs
         {
             double stone = save.Sect.GetResource(ResourceType.SpiritStone);
             double disc = WorldEvolutionLogic.GetTianjiTradeDiscount(save);
-            string hdr = string.Format("灵石库存: {0:F0}  |  下季调价补货: 余 {1} 月  |  商盟税惠: {2:P0}",
-                stone, w.MonthsUntilMarketRefresh, disc);
+            string hdr = string.Format("灵石库存:{0} | 下季补货:余{1}月 | 商盟税惠:{2:P0}",
+                UiStyleHelper.PadInt(stone, 6), UiStyleHelper.PadInt(w.MonthsUntilMarketRefresh, 2), disc);
             if (_lblMarketHeader.Text != hdr) _lblMarketHeader.Text = hdr;
 
             int selBatch = _batchStepBar != null ? _batchStepBar.SelectedBatch : 1;
