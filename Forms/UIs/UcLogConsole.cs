@@ -64,10 +64,10 @@ namespace SIGTool.Forms.UIs
                 Margin = new Padding(0)
             };
             tbl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tbl.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            tbl.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             tbl.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            var bar = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Fill, 26);
+            var bar = UiStyleHelper.CreateCleanToolbarStrip(DockStyle.Fill, 34);
 
             AddFilterButton(bar, LogFilterTab.All, "全部");
             AddFilterButton(bar, LogFilterTab.Cultivation, "修仙");

@@ -49,7 +49,7 @@ namespace SIGTool.Forms.UIs
             _onJumpRequested = onJumpRequested;
             this.DoubleBuffered = true;
             this.Dock = DockStyle.Top;
-            this.Height = 26;
+            this.Height = 34;
             this.Padding = new Padding(8, 1, 8, 0);
 
             _flow = new FlowLayoutPanel
@@ -65,7 +65,7 @@ namespace SIGTool.Forms.UIs
             {
                 AutoSize = true,
                 Font = UiStyleHelper.SmallBoldFont,
-                Margin = new Padding(0, 4, 6, 0),
+                Margin = new Padding(0, 7, 6, 0),
                 Text = "待办巡检:"
             };
 
@@ -73,7 +73,7 @@ namespace SIGTool.Forms.UIs
             {
                 AutoSize = true,
                 Font = UiStyleHelper.SmallFont,
-                Margin = new Padding(0, 4, 0, 0),
+                Margin = new Padding(0, 7, 0, 0),
                 Text = "各项吐纳、灵脉、炉火与护山大阵均运转正常。"
             };
 
